@@ -3,105 +3,154 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Stock Multi-Tab Researcher</title>
+    <title>Dev Stock Toolbox</title>
     <link
       rel="icon"
-      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>"
-    />
-    <link
-      href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@4/dark.css"
-      rel="stylesheet"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💼</text></svg>"
     />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-      /* Theme Variables */
+      /* Integrated Unified Theme Variables */
       :root {
-        --bg-color: #eef2f3;
-        --card-bg: #ffffff;
-        --text-main: #2c3e50;
-        --text-secondary: #555;
-        --input-border: #ddd;
+        --bg-body: #f1f5f9;
+        --bg-card: #ffffff;
+        --text-main: #1e293b;
+        --text-secondary: #64748b;
+        --border: #e2e8f0;
+        --primary: #2563eb;
+        --primary-hover: #1d4ed8;
+        --success: #10b981;
+        --danger: #ef4444;
+        --counter-color: #6c5ce7;
         --input-bg: #ffffff;
         --radio-bg: #f8f9fa;
         --link-bg: #f8f9fa;
         --link-text: #34495e;
-        --accent-color: #3498db;
-        --accent-hover: #2980b9;
       }
 
       [data-theme="dark"] {
-        --bg-color: #1a1a1a;
-        --card-bg: #2d2d2d;
-        --text-main: #ecf0f1;
-        --text-secondary: #bdc3c7;
-        --input-border: #444;
-        --input-bg: #3d3d3d;
-        --radio-bg: #3d3d3d;
-        --link-bg: #3d3d3d;
-        --link-text: #ecf0f1;
+        --bg-body: #0f172a;
+        --bg-card: #1e293b;
+        --text-main: #f1f5f9;
+        --text-secondary: #94a3b8;
+        --border: #334155;
+        --primary: #3b82f6;
+        --primary-hover: #2563eb;
+        --counter-color: #a29bfe;
+        --input-bg: #334155;
+        --radio-bg: #334155;
+        --link-bg: #334155;
+        --link-text: #f1f5f9;
       }
 
-      /* Reset & Base Styles */
+      /* Global Reset Styles */
       * {
-        box-sizing: border-box;
-        transition:
-          background-color 0.3s,
-          color 0.3s,
-          border-color 0.3s;
-      }
-      body {
-        font-family: "Segoe UI", Arial, sans-serif;
-        background-color: var(--bg-color);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
         margin: 0;
-        padding: 20px;
+        padding: 0;
+        box-sizing: border-box;
+        font-family:
+          "Inter",
+          system-ui,
+          -apple-system,
+          sans-serif;
+        transition:
+          background-color 0.3s ease,
+          color 0.3s ease,
+          border-color 0.3s ease;
       }
 
-      .card {
-        background: var(--card-bg);
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        width: 100%;
-        max-width: 450px;
-        position: relative;
-        /* Adds extra top padding to keep the button from hitting the edge */
-        padding-top: 50px;
-      }
-
-      /* Theme Toggle Button Updated */
-      .theme-toggle {
-        position: absolute;
-        top: 15px;
-        right: 20px;
-        background: var(--radio-bg);
-        border: 1px solid var(--input-border);
+      body {
+        background-color: var(--bg-body);
         color: var(--text-main);
-        cursor: pointer;
-        font-size: 12px;
-        font-weight: 600;
-        padding: 6px 14px;
+        min-height: 100vh;
+        padding: 30px 15px;
+      }
+
+      /* Header styling */
+      header {
+        max-width: 1200px;
+        margin: 0 auto 2rem auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid var(--border);
+        padding-bottom: 1rem;
+      }
+
+      header h1 {
+        font-size: 1.8rem;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+      }
+
+      /* Theme toggle switcher style */
+      .theme-toggle {
+        background-color: var(--bg-card);
+        color: var(--text-main);
+        border: 1px solid var(--border);
+        padding: 8px 16px;
         border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
         display: flex;
         align-items: center;
-        gap: 5px;
-        transition: all 0.2s;
-        z-index: 10;
+        gap: 6px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
       }
       .theme-toggle:hover {
-        opacity: 0.8;
+        opacity: 0.9;
       }
 
-      h2 {
-        text-align: center;
-        color: var(--text-main);
-        /* Provides enough distance from the button above it */
-        margin-top: 20px;
-        margin-bottom: 25px;
+      /* Grid Workspace Setup */
+      .dashboard-grid {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 20px;
       }
+
+      /* Card components */
+      .card {
+        background: var(--bg-card);
+        padding: 25px;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--border);
+      }
+
+      .card h2 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 1.2rem;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 0.5rem;
+      }
+
+      /* Specific Widget Layout sizing */
+      .stock-card {
+        grid-column: span 7;
+      }
+
+      .side-panel {
+        grid-column: span 5;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      /* Responsive Breakpoints */
+      @media (max-width: 992px) {
+        .stock-card {
+          grid-column: span 12;
+        }
+        .side-panel {
+          grid-column: span 12;
+        }
+      }
+
+      /* Form controls styles */
       .input-group {
         margin-bottom: 15px;
       }
@@ -112,424 +161,473 @@
         font-size: 14px;
         color: var(--text-secondary);
       }
-      input[type="text"] {
+      input[type="text"],
+      datalist {
         width: 100%;
-        padding: 14px;
-        border: 2px solid var(--input-border);
+        padding: 12px;
+        border: 2px solid var(--border);
         background-color: var(--input-bg);
         color: var(--text-main);
         border-radius: 8px;
-        font-size: 16px;
+        font-size: 15px;
       }
-      input[type="text"]:focus {
-        border-color: var(--accent-color);
+      input[type="text"]:focus,
+      textarea:focus {
+        border-color: var(--primary);
         outline: none;
       }
 
-      .input-group span:hover {
-        text-decoration: underline;
-        opacity: 0.8;
-      }
-
+      /* Checkbox & Radio layouts grid */
       .checkbox-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
         gap: 8px;
         background: var(--radio-bg);
         padding: 12px;
-        border: 1px solid var(--input-border);
+        border: 1px solid var(--border);
         border-radius: 8px;
         max-height: 150px;
         overflow-y: auto;
-        transition: border-color 0.3s;
       }
-      .check-option {
+      .check-option,
+      .radio-option {
         font-size: 13px;
         color: var(--text-main);
         display: flex;
         align-items: center;
         cursor: pointer;
       }
-      .check-option input {
+      .check-option input,
+      .radio-option input {
         margin-right: 8px;
+        cursor: pointer;
       }
 
       .radio-group {
         display: flex;
         gap: 15px;
-        margin-top: 5px;
         background: var(--radio-bg);
         padding: 10px;
         border-radius: 8px;
-      }
-      .radio-option {
-        display: flex;
-        align-items: center;
-        font-size: 14px;
-        cursor: pointer;
-        font-weight: 500;
-        color: var(--text-main);
-      }
-      .radio-option input {
-        margin-right: 6px;
-        cursor: pointer;
+        border: 1px solid var(--border);
       }
 
-      .btn-main {
-        width: 100%;
-        padding: 14px;
-        background-color: var(--accent-color);
-        color: white;
+      /* Shared Button Styles */
+      button.btn-action {
+        padding: 12px 20px;
+        font-size: 14px;
+        font-weight: 600;
         border: none;
         border-radius: 8px;
         cursor: pointer;
-        font-size: 16px;
-        font-weight: bold;
-        margin-top: 15px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
       }
-      .btn-main:hover {
-        background-color: var(--accent-hover);
-        transform: translateY(-1px);
+      .btn-primary {
+        background-color: var(--primary);
+        color: white;
       }
+      .btn-primary:hover {
+        background-color: var(--primary-hover);
+      }
+      .btn-danger {
+        background-color: var(--danger);
+        color: white;
+      }
+      .btn-danger:hover {
+        opacity: 0.9;
+      }
+      .btn-success {
+        background-color: var(--success);
+        color: white;
+      }
+      .btn-success:hover {
+        opacity: 0.9;
+      }
+
+      /* Multi-tab link items wrapper styles */
       #linkContainer {
-        margin-top: 20px;
-        padding-top: 20px;
-        border-top: 1px solid var(--input-border);
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid var(--border);
         display: none;
       }
       .link-item {
         display: block;
         background: var(--link-bg);
-        margin-bottom: 8px;
-        padding: 10px;
+        margin-bottom: 6px;
+        padding: 8px 12px;
         text-decoration: none;
         color: var(--link-text);
         border-radius: 6px;
-        font-size: 14px;
-        border-left: 4px solid var(--accent-color);
+        font-size: 13px;
+        border-left: 4px solid var(--primary);
       }
       .link-item:hover {
-        background: var(--accent-color);
+        background: var(--primary);
         color: white;
       }
       .hint {
         font-size: 11px;
-        color: #888;
+        color: var(--text-secondary);
         text-align: center;
-        margin-top: 15px;
+        margin-top: 10px;
       }
 
-      /* Forces SweetAlert Toast text to be bold and black */
-      .swal2-toast .swal2-title {
-        color: inherit !important;
-        font-weight: 600 !important;
+      /* Click Counter UI designs */
+      .counter-display {
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: var(--counter-color);
+        margin: 10px 0;
+        text-align: center;
+        transition: transform 0.1s ease;
+      }
+      .counter-buttons {
+        display: flex;
+        gap: 10px;
+      }
+
+      /* Text Case Converter Component Layout */
+      textarea {
+        width: 100%;
+        height: 120px;
+        padding: 12px;
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        font-size: 14px;
+        background: var(--bg-card);
+        color: var(--text-main);
+        margin-bottom: 10px;
+        resize: vertical;
+      }
+      .text-controls {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+        gap: 6px;
+        margin-bottom: 12px;
+      }
+      .text-controls button {
+        padding: 8px 4px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--radio-bg);
+        color: var(--text-main);
+        cursor: pointer;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .text-controls button:hover {
+        background: var(--primary);
+        color: white;
+      }
+      .text-actions {
+        display: flex;
+        gap: 10px;
       }
     </style>
   </head>
   <body>
-    <div class="card">
-      <button class="theme-toggle" id="themeToggle" title="Switch Theme">
-        <span id="themeText">🌙 Dark Mode</span>
+    <header>
+      <h1>Dev Stock Toolbox</h1>
+      <button
+        class="theme-toggle"
+        id="themeMasterBtn"
+        title="Switch Global Interface Theme"
+      >
+        <span id="themeMasterText">🌙 Dark Mode</span>
       </button>
-      <h2>Stock Multi-Tab Researcher</h2>
+    </header>
 
-      <div class="input-group">
-        <label>Exchange Name</label>
-        <input
-          type="text"
-          id="exchange_name"
-          list="exchange_list"
-          placeholder="Search Country or Exchange..."
-        />
-        <datalist id="exchange_list"> </datalist>
-      </div>
+    <main class="dashboard-grid">
+      <!-- Section 1: Stock Multi-Tab Researcher -->
+      <section class="card stock-card">
+        <h2>📊 Stock Multi-Tab Researcher</h2>
 
-      <div class="input-group">
-        <label>Ticker Symbol</label>
-        <input type="text" id="ticker_symbol" placeholder="Example: 601398" />
-      </div>
+        <div class="input-group">
+          <label for="exchange_name">Exchange Name</label>
+          <input
+            type="text"
+            id="exchange_name"
+            list="exchange_list"
+            placeholder="Search Country or Exchange..."
+          />
+          <datalist id="exchange_list"></datalist>
+        </div>
 
-      <div class="input-group">
-        <div
-          style="
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 6px;
-          "
-        >
-          <label style="margin-bottom: 0">Select Data Points</label>
+        <div class="input-group">
+          <label for="ticker_symbol">Ticker Symbol</label>
+          <input type="text" id="ticker_symbol" placeholder="Example: 601398" />
+        </div>
+
+        <div class="input-group">
           <div
             style="
-              font-size: 11px;
-              cursor: pointer;
-              color: var(--accent-color);
-              font-weight: bold;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 6px;
             "
           >
-            <span onclick="toggleAllCheckboxes(true)">All</span> |
-            <span onclick="toggleAllCheckboxes(false)">None</span>
+            <label style="margin-bottom: 0">Select Data Points</label>
+            <div style="font-size: 11px; font-weight: bold">
+              <span
+                onclick="toggleAllCheckboxes(true)"
+                style="cursor: pointer; color: var(--primary)"
+                >All</span
+              >
+              |
+              <span
+                onclick="toggleAllCheckboxes(false)"
+                style="cursor: pointer; color: var(--primary)"
+                >None</span
+              >
+            </div>
+          </div>
+          <div class="checkbox-grid" id="checkboxGrid">
+            <label class="check-option"
+              ><input type="checkbox" value="news" /> Latest News</label
+            >
+            <label class="check-option"
+              ><input type="checkbox" value="overview" /> Overview</label
+            >
+            <label class="check-option"
+              ><input type="checkbox" value="stats" /> Ratios</label
+            >
+            <label class="check-option"
+              ><input type="checkbox" value="history" /> Historical Data</label
+            >
+            <label class="check-option"
+              ><input type="checkbox" value="income" /> Income Statement</label
+            >
+            <label class="check-option"
+              ><input type="checkbox" value="balance" /> Balance Sheet</label
+            >
+            <label class="check-option"
+              ><input type="checkbox" value="cash" /> Cash Flow</label
+            >
+            <label class="check-option"
+              ><input type="checkbox" value="revenue" /> Revenue</label
+            >
+            <label class="check-option"
+              ><input type="checkbox" value="dividends" /> Dividends</label
+            >
           </div>
         </div>
-        <div class="checkbox-grid" id="checkboxGrid">
-          <label class="check-option"
-            ><input type="checkbox" value="news" /> Latest News</label
-          >
-          <label class="check-option"
-            ><input type="checkbox" value="overview" /> Overview</label
-          >
-          <label class="check-option"
-            ><input type="checkbox" value="stats" /> Ratios</label
-          >
-          <label class="check-option"
-            ><input type="checkbox" value="history" /> Historical Data</label
-          >
-          <label class="check-option"
-            ><input type="checkbox" value="income" /> Income Statement</label
-          >
-          <label class="check-option"
-            ><input type="checkbox" value="balance" /> Balance Sheet</label
-          >
-          <label class="check-option"
-            ><input type="checkbox" value="cash" /> Cash Flow</label
-          >
-          <label class="check-option"
-            ><input type="checkbox" value="revenue" /> Revenue</label
-          >
-          <label class="check-option"
-            ><input type="checkbox" value="dividends" /> Dividends</label
-          >
+
+        <div class="input-group">
+          <label>Data Source Support</label>
+          <div class="radio-group">
+            <label class="radio-option"
+              ><input
+                type="radio"
+                name="source"
+                value="stockanalysis"
+                checked
+              />StockAnalysis</label
+            >
+            <label class="radio-option"
+              ><input
+                type="radio"
+                name="source"
+                value="tradingview"
+              />TradingView</label
+            >
+          </div>
         </div>
-      </div>
 
-      <div class="input-group">
-        <label>Data Source Support</label>
-        <div class="radio-group">
-          <label class="radio-option">
-            <input
-              type="radio"
-              name="source"
-              value="stockanalysis"
-              checked
-            />StockAnalysis
-          </label>
-          <label class="radio-option">
-            <input type="radio" name="source" value="tradingview" />TradingView
-          </label>
+        <div style="display: flex; gap: 10px; margin-top: 15px">
+          <button
+            class="btn-action btn-primary"
+            style="flex: 2"
+            onclick="processSearch()"
+          >
+            Open All Selected Tabs
+          </button>
+          <button
+            class="btn-action btn-danger"
+            style="flex: 1"
+            onclick="resetStockForm()"
+          >
+            Reset
+          </button>
         </div>
-      </div>
 
-      <div style="display: flex; gap: 10px; margin-top: 15px">
-        <button class="btn-main" style="flex: 1" onclick="processSearch()">
-          Open All Tabs
-        </button>
-        <button
-          class="btn-main"
-          style="flex: 1; background: #e74c3c"
-          onclick="resetForm()"
-        >
-          <!-- <button
-          class="btn-main"
-          style="flex: 1; background: #95a5a6"
-          onclick="resetForm()"
-        > -->
-          Reset
-        </button>
-      </div>
+        <div id="linkContainer">
+          <label>Manual Generated Links Links:</label>
+          <div id="linkList"></div>
+        </div>
+        <p id="hintText" class="hint" style="display: none">
+          If tabs do not open automatically, please <b>Allow Pop-ups</b> in your
+          browser window configurations.
+        </p>
+      </section>
 
-      <div id="linkContainer">
-        <label>Manual Links:</label>
-        <div id="linkList"></div>
-      </div>
+      <!-- Panel Side Groups (Counter + Text Case) -->
+      <div class="side-panel">
+        <!-- Section 2: Click Counter -->
+        <section class="card">
+          <h2>🖱️ Click Counter</h2>
+          <div class="counter-display" id="counter-value">0</div>
+          <div class="counter-buttons">
+            <button
+              class="btn-action btn-primary"
+              id="click-btn"
+              style="flex: 2"
+            >
+              CLICK HERE
+            </button>
+            <button
+              class="btn-action btn-danger"
+              id="reset-counter-btn"
+              style="flex: 1"
+            >
+              Reset
+            </button>
+          </div>
+        </section>
 
-      <p id="hintText" class="hint" style="display: none">
-        If tabs don't appear, please <b>Allow Pop-ups</b> in your settings.
-      </p>
-    </div>
+        <!-- Section 3: Text Case Converter -->
+        <section class="card">
+          <h2>🔤 Text Case Converter</h2>
+          <textarea
+            id="textInput"
+            placeholder="Type or paste alphanumeric string data records here..."
+          ></textarea>
+
+          <div class="text-controls">
+            <button onclick="transformText('upper')">UPPERCASE</button>
+            <button onclick="transformText('lower')">lowercase</button>
+            <button onclick="transformText('capitalize')">
+              Capitalize Word
+            </button>
+            <button onclick="transformText('sentence')">Sentence case</button>
+            <button onclick="transformText('toggle')">tOGGLE cASE</button>
+          </div>
+
+          <div class="text-actions">
+            <button
+              class="btn-action btn-success"
+              style="flex: 2"
+              onclick="copyText()"
+            >
+              Copy to Clipboard
+            </button>
+            <button
+              class="btn-action btn-danger"
+              style="flex: 1"
+              onclick="clearText()"
+            >
+              Clear
+            </button>
+          </div>
+        </section>
+      </div>
+    </main>
 
     <script>
+      /* --- DOM Elements Context Setup --- */
       const exchangeInput = document.getElementById("exchange_name");
       const tickerInput = document.getElementById("ticker_symbol");
       const radioButtons = document.querySelectorAll('input[name="source"]');
-      const themeToggle = document.getElementById("themeToggle");
-      const themeText = document.getElementById("themeText");
+      const textInput = document.getElementById("textInput");
+      const themeMasterBtn = document.getElementById("themeMasterBtn");
+      const themeMasterText = document.getElementById("themeMasterText");
+
+      const counterDisplay = document.getElementById("counter-value");
+      const clickBtn = document.getElementById("click-btn");
+      const resetCounterBtn = document.getElementById("reset-counter-btn");
+
+      let count = 0;
+
       const exchanges = [
         {
           name: "Abu Dhabi Securities Exchange (United Arab Emirates)",
           code: "ADX",
         },
         { name: "Amman Stock Exchange (Jordan)", code: "ASE" },
-        { name: "Aquis Exchange (United Kingdom)", code: "AQU" },
-        { name: "Athens Stock Exchange (Greece)", code: "ATH" },
         { name: "Australian Securities Exchange (Australia)", code: "ASX" },
-        { name: "Bahrain Stock Exchange (Bahrain)", code: "BAX" },
-        { name: "Beirut Stock Exchange (Lebanon)", code: "BDB" },
-        { name: "Belgrade Stock Exchange (Serbia)", code: "BELEX" },
         { name: "Bombay Stock Exchange (India)", code: "BOM" },
         { name: "Borsa Italiana (Italy)", code: "BIT" },
-        { name: "Botswana Stock Exchange (Botswana)", code: "BSM" },
-        { name: "Bratislava Stock Exchange (Slovakia)", code: "BSSE" },
-        { name: "Brazil Stock Exchange (Brazil)", code: "BVMF" },
-        { name: "Bucharest Stock Exchange (Romania)", code: "BVB" },
-        { name: "Budapest Stock Exchange (Hungary)", code: "BUD" },
-        { name: "Buenos Aires Stock Exchange (Argentina)", code: "BCBA" },
-        { name: "Bulgarian Stock Exchange (Bulgaria)", code: "BUL" },
         { name: "Bursa Malaysia (Malaysia)", code: "KLSE" },
-        { name: "Canadian Securities Exchange (Canada)", code: "CSE" },
-        { name: "Caracas Stock Exchange (Venezuela)", code: "CCSE" },
-        { name: "Casablanca Stock Exchange (Morocco)", code: "CBSE" },
-        { name: "Cboe Canada (Canada)", code: "NEO" },
-        { name: "Colombia Stock Exchange (Colombia)", code: "BVC" },
-        { name: "Colombo Stock Exchange (Sri Lanka)", code: "COSE" },
-        { name: "Copenhagen Stock Exchange (Denmark)", code: "CPH" },
-        { name: "Cyprus Stock Exchange (Cyprus)", code: "CYS" },
         { name: "Deutsche Börse Xetra (Germany)", code: "ETR" },
-        { name: "Dhaka Stock Exchange (Bangladesh)", code: "DSE" },
-        { name: "Dubai Financial Market (United Arab Emirates)", code: "DFM" },
-        { name: "Dusseldorf Stock Exchange (Germany)", code: "DUSE" },
-        { name: "Egyptian Stock Exchange (Egypt)", code: "EGX" },
-        { name: "Euronext Amsterdam (Netherlands)", code: "AMS" },
-        { name: "Euronext Brussels (Belgium)", code: "EBR" },
-        { name: "Euronext Dublin (Ireland)", code: "ISE" },
-        { name: "Euronext Lisbon (Portugal)", code: "ELI" },
         { name: "Euronext Paris (Poland)", code: "WSE" },
-        { name: "Frankfurt Stock Exchange (Germany)", code: "FRA" },
-        { name: "Fukuoka Stock Exchange (Japan)", code: "FKSE" },
-        { name: "Ghana Stock Exchange (Ghana)", code: "GHSE" },
-        { name: "Hamburg Stock Exchange (Germany)", code: "HAM" },
-        { name: "Hanoi Stock Exchange (Viet Nam)", code: "HNX" },
-        { name: "Ho Chi Minh Stock Exchange (Viet Nam)", code: "HOSE" },
         { name: "Hong Kong Stock Exchange (Hong Kong)", code: "HKG" },
         { name: "Indonesia Stock Exchange (Indonesia)", code: "IDX" },
-        { name: "Istanbul Stock Exchange (Turkey)", code: "IST" },
-        { name: "Ivory Coast Stock Exchange (Ivory Coast)", code: "BRVM" },
-        { name: "Jamaica Stock Exchange (Jamaica)", code: "JMSE" },
-        { name: "Johannesburg Stock Exchange (South Africa)", code: "JSE" },
-        { name: "Kazakhstan Stock Exchange (Kazakhstan)", code: "KASE" },
-        { name: "Korea New Exchange (South Korea)", code: "XKON" },
-        { name: "Korea Stock Exchange (South Korea)", code: "	KRX" },
-        { name: "KOSDAQ (South Korea)", code: "KOSDAQ" },
-        { name: "Kuwait Stock Exchange (Kuwait)", code: "KWSE" },
-        { name: "Lima Stock Exchange (Peru)", code: "BVL" },
-        { name: "Ljubljana Stock Exchange (Slovenia)", code: "LJSE" },
         { name: "London Stock Exchange (United Kingdom)", code: "LON" },
-        { name: "London Stock Exchange AIM (United Kingdom)", code: "AIM" },
-        { name: "Lusaka Stock Exchange (Zambia)", code: "LUSE" },
-        { name: "Luxembourg Stock Exchange (Luxembourg)", code: "LUX" },
-        { name: "Madrid Stock Exchange (Spain)", code: "BME" },
-        { name: "Malawi Stock Exchange (Malawi)", code: "MAL" },
-        { name: "Malta Stock Exchange (Malta)", code: "MSE" },
-        { name: "Mauritius Stock Exchange (Mauritius)", code: "MUSE" },
-        { name: "Mexican Stock Exchange (Mexico)", code: "BMV" },
-        { name: "Moscow Stock Exchange (Russia)", code: "MOEX" },
-        { name: "Munich Stock Exchange (Germany)", code: "MUN" },
-        { name: "Muscat Securities Market (Oman)", code: "MSM" },
-        { name: "Nagoya Stock Exchange (Japan)", code: "XNGO" },
-        { name: "Nairobi Stock Exchange (Kenya)", code: "NASE" },
-        { name: "Namibian Stock Exchange (Namibia)", code: "NMSE" },
-        { name: "Nasdaq Helsinki (Finland)", code: "HEL" },
-        { name: "Nasdaq Iceland (Iceland)", code: "ICE" },
-        { name: "Nasdaq Riga (Latvia)", code: "RSE" },
         { name: "Nasdaq Stock Market (United States)", code: "NASDAQ" },
-        { name: "Nasdaq Stockholm (Sweden)", code: "STO" },
-        { name: "Nasdaq Tallinn (Estonia)", code: "TAL" },
-        { name: "Nasdaq Vilnius (Lithuania)", code: "VSE" },
-        {
-          name: "National Stock Exchange of Australia (Australia)",
-          code: "NSX",
-        },
         { name: "National Stock Exchange of India (India)", code: "NSE" },
         { name: "New York Stock Exchange (United States)", code: "NYSE" },
-        { name: "New Zealand Stock Exchange (New Zealand)", code: "NZE" },
-        { name: "Nigerian Stock Exchange (Nigeria)", code: "NGX" },
-        { name: "Nordic Growth Market (Sweden)", code: "NGM" },
-        { name: "NYSE American (United States)", code: "AMEX" },
-        { name: "Oslo Børs (Norway)", code: "OSL" },
-        { name: "Pakistan Stock Exchange (Pakistan)", code: "PSX" },
-        { name: "Palestine Stock Exchange (Palestine)", code: "PEX" },
-        { name: "PFTS Stock Exchange (Ukraine)", code: "UKR" },
-        { name: "Philippine Stock Exchange (Philippines)", code: "PSE" },
-        { name: "Prague Stock Exchange (Czech Republic)", code: "PRA" },
-        { name: "Qatar Stock Exchange (Qatar)", code: "QSE" },
-        { name: "Santiago Stock Exchange (Chile)", code: "SNSE" },
-        { name: "Sapporo Stock Exchange (Japan)", code: "SPSE" },
-        { name: "Saudi Stock Exchange (Saudi Arabia)", code: "Saudi Arabia" },
         { name: "Shanghai Stock Exchange (China)", code: "SHA" },
         { name: "Shenzhen Stock Exchange (China)", code: "SHE" },
         { name: "Singapore Exchange (Singapore)", code: "SGX" },
-        { name: "Singapore Exchange - Catalist (Singapore)", code: "SGXC" },
-        { name: "SIX Swiss Exchange (Switzerland)", code: "SWX" },
-        { name: "Spotlight Stock Market (Sweden)", code: "XSAT" },
-        { name: "Stock Exchange of Thailand (Thailand)", code: "BKK" },
-        { name: "Stuttgart Stock Exchange (Germany)", code: "BST" },
-        { name: "Taipei Exchange (Taiwan)", code: "TPEX" },
-        { name: "Taiwan Stock Exchange (Taiwan)", code: "TPE" },
-        { name: "Tanzania Stock Exchange (Tanzania)", code: "DAR" },
-        { name: "Tel Aviv Stock Exchange (Israel)", code: "TLV" },
         { name: "Tokyo Stock Exchange (Japan)", code: "TYO" },
         { name: "Toronto Stock Exchange (Canada)", code: "TSX" },
-        {
-          name: "Trinidad and Tobago Stock Exchange (Trinidad and Tobago)",
-          code: "TTSE",
-        },
-        { name: "TSX Venture Exchange (Canada)", code: "TSXV" },
-        { name: "Tunis Stock Exchange (Tunisia)", code: "BVMT" },
-        { name: "Uganda Securities Exchange (Uganda)", code: "UGSE" },
-        { name: "Vienna Stock Exchange (Austria)", code: "VIE" },
-        { name: "Warsaw Stock Exchange (Poland)", code: "WSE" },
-        { name: "Zagreb Stock Exchange (Croatia)", code: "ZSE" },
-        { name: "Zimbabwe Stock Exchange (Zimbabwe)", code: "ZMSE" },
       ];
 
-      // Function to fill datalist automatically
-      function populateExchangeList() {
+      window.addEventListener("DOMContentLoaded", () => {
         const list = document.getElementById("exchange_list");
         exchanges.forEach((ex) => {
           const option = document.createElement("option");
-          option.value = ex.name; // show full name
-          option.setAttribute("data-code", ex.code); // save code in attribute
+          option.value = ex.name;
+          option.setAttribute("data-code", ex.code);
           list.appendChild(option);
         });
+        updatePlaceholders();
+      });
+
+      /* --- Global Theme Logic Switcher --- */
+      function setTheme(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        localStorage.setItem("theme", theme);
+        themeMasterText.innerText =
+          theme === "dark" ? "☀️ Light Mode" : "🌙 Dark Mode";
       }
 
-      // Call this function when window loads
-      window.addEventListener("DOMContentLoaded", populateExchangeList);
+      themeMasterBtn.addEventListener("click", () => {
+        const currentTheme =
+          document.documentElement.getAttribute("data-theme");
+        setTheme(currentTheme === "dark" ? "light" : "dark");
+      });
+      setTheme(localStorage.getItem("theme") || "light");
 
-      function getExchangeCodeFromName(name) {
-        const found = exchanges.find(
-          (ex) => ex.name.toLowerCase() === name.toLowerCase(),
-        );
-        return found ? found.code : name; // fallback if user types manually
+      function getToastConfig(icon, title) {
+        const isDark =
+          document.documentElement.getAttribute("data-theme") === "dark";
+        return {
+          toast: true,
+          position: "top",
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          background: isDark ? "#1e293b" : "#ffffff",
+          color: isDark ? "#f1f5f9" : "#1e293b",
+          icon: icon,
+          title: title,
+        };
       }
 
+      /* --- Stock Logic Methods --- */
       function toTitleCase(str) {
         return str.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
       }
 
-      exchangeInput.addEventListener("blur", () => {
-        exchangeInput.value = toTitleCase(exchangeInput.value);
-      });
-
-      // --- Auto Capitalization Function (Only for values, not placeholders) ---
       function handleInputCase(e) {
         const source = document.querySelector(
           'input[name="source"]:checked',
         ).value;
-
         if (e.target.id === "exchange_name") {
-          // Exchange is always Title Case
           e.target.value = toTitleCase(e.target.value);
         } else {
-          // Ticker still follows source
-          if (source === "stockanalysis") {
-            e.target.value = e.target.value.toLowerCase();
-          } else {
-            e.target.value = e.target.value.toUpperCase();
-          }
+          e.target.value =
+            source === "stockanalysis"
+              ? e.target.value.toLowerCase()
+              : e.target.value.toUpperCase();
         }
       }
 
-      // Add listener to input
       exchangeInput.addEventListener("input", handleInputCase);
       tickerInput.addEventListener("input", handleInputCase);
 
@@ -537,39 +635,28 @@
         const selectedSource = document.querySelector(
           'input[name="source"]:checked',
         ).value;
-
-        // Exchange is always the same
-        exchangeInput.placeholder = "Select exchange name";
-
-        if (selectedSource === "stockanalysis") {
-          tickerInput.placeholder = "Example: 601398";
-
-          // lowercase ticker
-          tickerInput.value = tickerInput.value.toLowerCase();
-        } else {
-          tickerInput.placeholder = "Example: 601398";
-
-          // uppercase ticker
-          tickerInput.value = tickerInput.value.toUpperCase();
-        }
-
-        // Keep the exchange in Title Case
-        exchangeInput.value = toTitleCase(exchangeInput.value);
+        tickerInput.value =
+          selectedSource === "stockanalysis"
+            ? tickerInput.value.toLowerCase()
+            : tickerInput.value.toUpperCase();
       }
 
-      radioButtons.forEach((radio) => {
-        radio.addEventListener("change", updatePlaceholders);
-      });
+      radioButtons.forEach((r) =>
+        r.addEventListener("change", updatePlaceholders),
+      );
 
-      [tickerInput, exchangeInput].forEach((el) => {
-        el.addEventListener("keypress", (e) => {
-          if (e.key === "Enter") processSearch();
-        });
-      });
+      function toggleAllCheckboxes(selectAll) {
+        document
+          .querySelectorAll('#checkboxGrid input[type="checkbox"]')
+          .forEach((cb) => (cb.checked = selectAll));
+      }
 
       function processSearch() {
         let exchangeName = exchangeInput.value.trim();
-        let exchange = getExchangeCodeFromName(exchangeName);
+        let foundEx = exchanges.find(
+          (ex) => ex.name.toLowerCase() === exchangeName.toLowerCase(),
+        );
+        let exchange = foundEx ? foundEx.code : exchangeName;
         let ticker = tickerInput.value.trim();
         const source = document.querySelector(
           'input[name="source"]:checked',
@@ -578,73 +665,40 @@
           document.querySelectorAll("#checkboxGrid input:checked"),
         ).map((cb) => cb.value);
 
-        // Theme Detection
-        const isDark =
-          document.documentElement.getAttribute("data-theme") === "dark";
-
-        // SweetAlert2 Toast Mixin Configuration
-        const Toast = Swal.mixin({
-          toast: true,
-          position: "top",
-          showConfirmButton: false,
-          timer: 5000,
-          timerProgressBar: true,
-          // Background and text color fixes
-          background: isDark ? "#2d2d2d" : "#ffffff",
-          color: isDark ? "#ffffff" : "#000000",
-          // Remove or adjust iconColor to follow SweetAlert's default color (Success = Green)
-          iconColor: undefined,
-          didOpen: (toast) => {
-            toast.addEventListener("mouseenter", Swal.stopTimer);
-            toast.addEventListener("mouseleave", Swal.resumeTimer);
-          },
-        });
-
-        // Text Input Validation using Toast
         if (!exchange || !ticker) {
-          Toast.fire({
-            icon: "error",
-            title: "Exchange & Ticker are required!",
-          });
+          Swal.fire(
+            getToastConfig(
+              "error",
+              "Exchange & Ticker code specifications are required!",
+            ),
+          );
           return;
         }
-
-        // Checkbox Validation using Toast
         if (selectedData.length === 0) {
-          Toast.fire({
-            icon: "warning",
-            title: "Select at least one data point!",
-          });
+          Swal.fire(
+            getToastConfig(
+              "warning",
+              "Select at least one tracking data configuration point!",
+            ),
+          );
           return;
         }
 
-        // --- Targets Logic ---
         let allTargets = [];
         if (source === "stockanalysis") {
           exchange = exchange.toLowerCase();
           ticker = ticker.toLowerCase();
-
-          // Specify the Base URL based on the Exchange
-          const usExchanges = ["otc", "nasdaq", "nyse", "amex"];
-          let baseUrl;
-
-          if (usExchanges.includes(exchange)) {
-            baseUrl = `https://www.stockanalysis.com/stocks/${ticker}`;
-          } else {
-            baseUrl = `https://www.stockanalysis.com/quote/${exchange}/${ticker}`;
-          }
+          let baseUrl = ["otc", "nasdaq", "nyse", "amex"].includes(exchange)
+            ? `https://www.stockanalysis.com/stocks/${ticker}`
+            : `https://www.stockanalysis.com/quote/${exchange}/${ticker}`;
 
           allTargets = [
             {
               id: "news",
               name: "📰 Latest News",
-              url: `https://www.google.com/search?q=${exchange}:%20${ticker}&tbm=nws&tbs=sbd:1`,
+              url: `https://www.google.com/search?q=${exchange}:%20${ticker}&tbm=nws`,
             },
-            {
-              id: "overview",
-              name: "🏢 Overview",
-              url: `${baseUrl}/company`,
-            },
+            { id: "overview", name: "🏢 Overview", url: `${baseUrl}/company` },
             {
               id: "stats",
               name: "📊 Financial Ratios",
@@ -684,19 +738,14 @@
         } else {
           exchange = exchange.toUpperCase();
           ticker = ticker.toUpperCase();
-
-          // Special conditions for TradingView
-          if (exchange === "SHA") {
-            exchange = "SSE";
-          } else if (exchange === "SHE") {
-            exchange = "SZSE";
-          }
+          if (exchange === "SHA") exchange = "SSE";
+          else if (exchange === "SHE") exchange = "SZSE";
 
           allTargets = [
             {
               id: "news",
               name: "📰 Latest News",
-              url: `https://www.google.com/search?q=${exchange}:%20${ticker}&tbm=nws&tbs=sbd:1`,
+              url: `https://www.google.com/search?q=${exchange}:%20${ticker}&tbm=nws`,
             },
             {
               id: "overview",
@@ -742,14 +791,13 @@
         }
 
         const targets = allTargets.filter((t) => selectedData.includes(t.id));
+        Swal.fire(
+          getToastConfig(
+            "success",
+            `Opening ${targets.length} analysis tabs layout links window`,
+          ),
+        );
 
-        // Toast of Success
-        Toast.fire({
-          icon: "success",
-          title: `Opening ${targets.length} tabs for ${ticker.toUpperCase()}`,
-        });
-
-        // Show Manual Link
         document.getElementById("hintText").style.display = "block";
         const container = document.getElementById("linkContainer");
         const list = document.getElementById("linkList");
@@ -763,86 +811,139 @@
           a.className = "link-item";
           a.innerText = item.name;
           list.appendChild(a);
-
-          // Auto open tabs with pause
           setTimeout(() => {
             window.open(item.url, "_blank");
           }, index * 250);
         });
       }
 
-      function toggleAllCheckboxes(selectAll) {
-        const checkboxes = document.querySelectorAll(
-          '#checkboxGrid input[type="checkbox"]',
-        );
-        checkboxes.forEach((cb) => {
-          cb.checked = selectAll;
-        });
-      }
-
-      updatePlaceholders();
-
-      function resetForm() {
-        // Theme Detection
-        const isDark =
-          document.documentElement.getAttribute("data-theme") === "dark";
-
-        const Toast = Swal.mixin({
-          toast: true,
-          position: "top",
-          showConfirmButton: false,
-          timer: 4000,
-          timerProgressBar: true,
-          background: isDark ? "#2d2d2d" : "#ffffff",
-          color: isDark ? "#ffffff" : "#000000",
-          didOpen: (toast) => {
-            toast.addEventListener("mouseenter", Swal.stopTimer);
-            toast.addEventListener("mouseleave", Swal.resumeTimer);
-          },
-        });
-
-        // Reset input
-        document.getElementById("exchange_name").value = "";
-        document.getElementById("ticker_symbol").value = "";
-
-        // Reset checkbox (all checked as initial default)
+      function resetStockForm() {
+        exchangeInput.value = "";
+        tickerInput.value = "";
         toggleAllCheckboxes(false);
-
-        // Reset radio to default
-        document.querySelector(
-          'input[name="source"][value="stockanalysis"]',
-        ).checked = true;
-
-        // Update placeholder & casing
-        updatePlaceholders();
-
-        // Hide link results
         document.getElementById("linkContainer").style.display = "none";
         document.getElementById("hintText").style.display = "none";
+        Swal.fire(
+          getToastConfig(
+            "success",
+            "Stock profile inputs configuration reset.",
+          ),
+        );
+      }
 
-        // Notification toast (auto theme-aware)
-        Toast.fire({
-          icon: "success",
-          title: "Form has been reset",
+      /* --- Counter Logic --- */
+      clickBtn.addEventListener("click", () => {
+        count++;
+        counterDisplay.textContent = count;
+        counterDisplay.style.transform = "scale(1.15)";
+        setTimeout(() => {
+          counterDisplay.style.transform = "scale(1)";
+        }, 100);
+      });
+
+      resetCounterBtn.addEventListener("click", () => {
+        const currentTheme =
+          document.documentElement.getAttribute("data-theme");
+        Swal.fire({
+          title: "Reset counter metrics?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Yes",
+          confirmButtonColor: "#ef4444",
+          cancelButtonColor: "#64748b",
+          background: currentTheme === "dark" ? "#1e293b" : "#ffffff",
+          color: currentTheme === "dark" ? "#f1f5f9" : "#1e293b",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            count = 0;
+            counterDisplay.textContent = count;
+            Swal.fire(
+              getToastConfig("success", "Metrics cleared back to zero."),
+            );
+          }
+        });
+      });
+
+      // Intercept accidental data refresh key combinations
+      window.addEventListener("keydown", (e) => {
+        if (((e.ctrlKey || e.metaKey) && e.key === "r") || e.key === "F5") {
+          e.preventDefault();
+          Swal.fire(
+            getToastConfig(
+              "info",
+              "Shortcut refresh captured safely to maintain metrics state data stability.",
+            ),
+          );
+        }
+      });
+
+      /* --- Text Transformer Case Logic --- */
+      function transformText(type) {
+        let str = textInput.value;
+        if (!str.trim()) {
+          Swal.fire(
+            getToastConfig(
+              "warning",
+              "Workspace input target value field is empty!",
+            ),
+          );
+          return;
+        }
+        switch (type) {
+          case "upper":
+            textInput.value = str.toUpperCase();
+            break;
+          case "lower":
+            textInput.value = str.toLowerCase();
+            break;
+          case "capitalize":
+            textInput.value = str
+              .toLowerCase()
+              .split(/\s+/)
+              .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+              .join(" ");
+            break;
+          case "sentence":
+            let low = str.toLowerCase().trim();
+            textInput.value = low.charAt(0).toUpperCase() + low.slice(1);
+            break;
+          case "toggle":
+            textInput.value = str
+              .split("")
+              .map((c) =>
+                c === c.toUpperCase() ? c.toLowerCase() : c.toUpperCase(),
+              )
+              .join("");
+            break;
+        }
+      }
+
+      function copyText() {
+        if (!textInput.value.trim()) {
+          Swal.fire(
+            getToastConfig(
+              "error",
+              "No printable text characters array string value found to copy inside document buffer!",
+            ),
+          );
+          return;
+        }
+        textInput.select();
+        navigator.clipboard.writeText(textInput.value).then(() => {
+          Swal.fire(
+            getToastConfig(
+              "success",
+              "Value saved cleanly inside system clipboard stack!",
+            ),
+          );
         });
       }
 
-      // --- Theme Logic ---
-      function setTheme(theme) {
-        document.documentElement.setAttribute("data-theme", theme);
-        localStorage.setItem("theme", theme);
-        themeText.innerText =
-          theme === "dark" ? "☀️ Light Mode" : "🌙 Dark Mode";
+      function clearText() {
+        if (!textInput.value) return;
+        textInput.value = "";
+        Swal.fire(getToastConfig("success", "Text records purged safely."));
       }
-
-      themeToggle.addEventListener("click", () => {
-        const currentTheme =
-          document.documentElement.getAttribute("data-theme");
-        setTheme(currentTheme === "dark" ? "light" : "dark");
-      });
-
-      const savedTheme = localStorage.getItem("theme") || "light";
-      setTheme(savedTheme);
     </script>
   </body>
 </html>
