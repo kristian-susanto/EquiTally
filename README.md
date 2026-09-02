@@ -83,9 +83,3 @@ Run the unified toolbox `.html` file inside any modern web browser window (e.g.,
 - **CSS3 Variables & Responsive Design:** Centralized color variables handle real-time theme swapping, while a mobile-first layout engine guarantees responsive adaptations.
 - **Vanilla JavaScript (ES6+):** Manages local caching layers, handles typography transformations, monitors tracking variables, and maps data parameters into targeted financial URL strings.
 - **SweetAlert2 Library Integration:** Leveraged for modern, non-blocking toast popups and validation dialogs that automatically match the selected system theme.
-
----
-
-## 📝 Distribution
-
-This project is open-source. You are free to modify, distribute, and enhance this multi-utility dashboard workspace to better serve your unique financial analytics or development workflows.
