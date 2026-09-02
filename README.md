@@ -86,6 +86,6 @@ Run the unified toolbox `.html` file inside any modern web browser window (e.g.,
 
 ---
 
-## 📝 License & Distribution
+## 📝 Distribution
 
-This project is open-source and released under the terms of the MIT License. You are free to modify, distribute, and enhance this multi-utility dashboard workspace to better serve your unique financial analytics or development workflows.
+This project is open-source. You are free to modify, distribute, and enhance this multi-utility dashboard workspace to better serve your unique financial analytics or development workflows.
