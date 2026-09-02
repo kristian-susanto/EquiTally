@@ -1,6 +1,6 @@
-# Dev Stock Toolbox (Stock Researcher, Click Counter, & Text Case Converter)
+# EquiTally (Stock Researcher, Click Counter, & Text Case Converter)
 
-Welcome to the **Dev Stock Toolbox** documentation. This unified platform combines three essential tools into a single, high-performance web interface: the **Stock Multi-Tab Researcher**, **Click Counter**, and **Text Case Converter**. Designed with professional workflows in mind, this comprehensive workspace eliminates context switching by combining productivity tools alongside advanced capital market analytics.
+Welcome to the **EquiTally** documentation. This unified platform combines three essential tools into a single, high-performance web interface: the **Stock Multi-Tab Researcher**, **Click Counter**, and **Text Case Converter**. Designed with professional workflows in mind, this comprehensive workspace eliminates context switching by combining productivity tools alongside advanced capital market analytics.
 
 ---
 
