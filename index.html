@@ -26,7 +26,6 @@
         --radio-bg: #f8f9fa;
         --link-bg: #f8f9fa;
         --link-text: #34495e;
-        --focus-glow: rgba(37, 99, 235, 0.35);
       }
 
       [data-theme="dark"] {
@@ -42,7 +41,6 @@
         --radio-bg: #334155;
         --link-bg: #334155;
         --link-text: #f1f5f9;
-        --focus-glow: rgba(59, 130, 246, 0.4);
       }
 
       /* Global Reset Styles */
@@ -119,28 +117,7 @@
         padding: 25px;
         border-radius: 16px;
         box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-        border: 2px solid transparent;
-        /* base border, will be overridden by focus */
-        transition:
-          border-color 0.2s,
-          box-shadow 0.2s;
-      }
-
-      /* Focus/active indicator for sections */
-      .card:focus-visible {
-        outline: none;
-        border-color: var(--primary);
-        box-shadow:
-          0 0 0 4px var(--focus-glow),
-          0 10px 25px -5px rgba(0, 0, 0, 0.15);
-      }
-
-      /* When a card is clicked, we also want to show focus */
-      .card.focused {
-        border-color: var(--primary);
-        box-shadow:
-          0 0 0 4px var(--focus-glow),
-          0 10px 25px -5px rgba(0, 0, 0, 0.15);
+        border: 1px solid var(--border);
       }
 
       .card h2 {
@@ -350,25 +327,6 @@
         display: flex;
         gap: 10px;
       }
-
-      /* Small helper to indicate keyboard shortcut */
-      .enter-hint {
-        font-size: 11px;
-        color: var(--text-secondary);
-        margin-top: 10px;
-        text-align: right;
-        opacity: 0.7;
-        border-top: 1px dashed var(--border);
-        padding-top: 8px;
-      }
-      .enter-hint kbd {
-        background: var(--radio-bg);
-        padding: 2px 8px;
-        border-radius: 4px;
-        font-weight: 600;
-        font-size: 11px;
-        border: 1px solid var(--border);
-      }
     </style>
   </head>
   <body>
@@ -385,7 +343,7 @@
 
     <main class="dashboard-grid">
       <!-- Section 1: Stock Multi-Tab Researcher -->
-      <section class="card stock-card" id="stockCard" tabindex="0">
+      <section class="card stock-card">
         <h2>📊 Stock Multi-Tab Researcher</h2>
 
         <div class="input-group">
@@ -505,15 +463,12 @@
           If tabs do not open automatically, please <b>Allow Pop-ups</b> in your
           browser window configurations.
         </p>
-        <div class="enter-hint">
-          <kbd>Enter</kbd> when focused to run search
-        </div>
       </section>
 
       <!-- Panel Side Groups (Counter + Text Case) -->
       <div class="side-panel">
         <!-- Section 2: Click Counter -->
-        <section class="card" id="counterCard" tabindex="0">
+        <section class="card">
           <h2>🖱️ Click Counter</h2>
           <div class="counter-display" id="counter-value">0</div>
           <div class="counter-buttons">
@@ -532,11 +487,10 @@
               Reset
             </button>
           </div>
-          <div class="enter-hint"><kbd>Enter</kbd> when focused to click</div>
         </section>
 
         <!-- Section 3: Text Case Converter -->
-        <section class="card" id="textCard" tabindex="0">
+        <section class="card">
           <h2>🔤 Text Case Converter</h2>
           <textarea
             id="textInput"
@@ -568,9 +522,6 @@
             >
               Clear
             </button>
-          </div>
-          <div class="enter-hint">
-            <kbd>Enter</kbd> when focused to copy text
           </div>
         </section>
       </div>
@@ -679,6 +630,16 @@
 
       exchangeInput.addEventListener("input", handleInputCase);
       tickerInput.addEventListener("input", handleInputCase);
+
+      // Run processSearch() when the Enter key is pressed in the Exchange or Ticker input
+      [exchangeInput, tickerInput].forEach((input) => {
+        input.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault(); // Prevent default form reload/submission if applicable
+            processSearch();
+          }
+        });
+      });
 
       function updatePlaceholders() {
         const selectedSource = document.querySelector(
@@ -789,6 +750,7 @@
           ticker = ticker.toUpperCase();
           if (exchange === "SHA") exchange = "SSE";
           else if (exchange === "SHE") exchange = "SZSE";
+          else if (exchange === "ETR") exchange = "EXTR";
 
           allTargets = [
             {
@@ -804,7 +766,7 @@
             {
               id: "stats",
               name: "📊 Financial Stats",
-              url: `https://www.tradingview.com/symbols/${exchange}-${ticker}/financials-statistics-and-ratios/`,
+              url: `https://www.tradingview.com/symbols/${exchange}-${ticker}/financials-statistics-and-ratios/?statements-period=FQ`,
             },
             {
               id: "history",
@@ -814,17 +776,17 @@
             {
               id: "income",
               name: "📑 Income Statement",
-              url: `https://www.tradingview.com/symbols/${exchange}-${ticker}/financials-income-statement/`,
+              url: `https://www.tradingview.com/symbols/${exchange}-${ticker}/financials-income-statement/?statements-period=FQ`,
             },
             {
               id: "balance",
               name: "⚖️ Balance Sheet",
-              url: `https://www.tradingview.com/symbols/${exchange}-${ticker}/financials-balance-sheet/`,
+              url: `https://www.tradingview.com/symbols/${exchange}-${ticker}/financials-balance-sheet/?statements-period=FQ`,
             },
             {
               id: "cash",
               name: "🔄 Cash Flow",
-              url: `https://www.tradingview.com/symbols/${exchange}-${ticker}/financials-cash-flow/`,
+              url: `https://www.tradingview.com/symbols/${exchange}-${ticker}/financials-cash-flow/?statements-period=FQ`,
             },
             {
               id: "revenue",
@@ -913,8 +875,13 @@
         });
       });
 
-      // Intercept accidental data refresh key combinations
       window.addEventListener("keydown", (e) => {
+        // Ignore if the user is typing inside the textarea
+        if (e.target.tagName === "TEXTAREA") {
+          return;
+        }
+
+        // Intercept Refresh button (Ctrl+R / F5)
         if (((e.ctrlKey || e.metaKey) && e.key === "r") || e.key === "F5") {
           e.preventDefault();
           Swal.fire(
@@ -923,6 +890,13 @@
               "Shortcut refresh captured safely to maintain metrics state data stability.",
             ),
           );
+          return;
+        }
+
+        // Run processSearch() when the Enter key is pressed
+        if (e.key === "Enter") {
+          e.preventDefault(); // Prevent triggering other buttons/elements that currently have focus
+          processSearch();
         }
       });
 
@@ -993,84 +967,6 @@
         textInput.value = "";
         Swal.fire(getToastConfig("success", "Text records purged safely."));
       }
-
-      /* Focus/Enter handling for sections */
-      const stockCard = document.getElementById("stockCard");
-      const counterCard = document.getElementById("counterCard");
-      const textCard = document.getElementById("textCard");
-
-      // When a card receives focus, remove .focused from all and add to this one
-      function setFocusedCard(card) {
-        document
-          .querySelectorAll(".card")
-          .forEach((c) => c.classList.remove("focused"));
-        if (card) card.classList.add("focused");
-      }
-
-      // Listen for focus events on cards
-      document.querySelectorAll(".card").forEach((card) => {
-        card.addEventListener("focus", () => setFocusedCard(card));
-        card.addEventListener("blur", () => {
-          // Remove .focused when focus leaves, but only if we are not moving to another card
-          setTimeout(() => {
-            if (
-              !document.activeElement ||
-              !document.activeElement.closest(".card")
-            ) {
-              card.classList.remove("focused");
-            }
-          }, 10);
-        });
-        // Clicking inside should focus the card (if not already)
-        card.addEventListener("mousedown", (e) => {
-          const tag = e.target.tagName;
-          if (
-            tag === "INPUT" ||
-            tag === "BUTTON" ||
-            tag === "TEXTAREA" ||
-            tag === "A"
-          ) {
-            setTimeout(() => {
-              setFocusedCard(card);
-            }, 10);
-            return;
-          }
-          // Otherwise, focus the card
-          card.focus();
-        });
-      });
-
-      // Global keydown: if Enter and active element is a card, run its action
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-          const active = document.activeElement;
-          if (!active) return;
-
-          // Check if active is one of the card elements
-          if (active.id === "stockCard") {
-            e.preventDefault();
-            processSearch();
-          } else if (active.id === "counterCard") {
-            e.preventDefault();
-            clickBtn.click();
-          } else if (active.id === "textCard") {
-            e.preventDefault();
-            copyText();
-          }
-        }
-      });
-
-      // Also handle the case where user clicks on a card but focus goes to an input inside.
-      document
-        .querySelectorAll(".card input, .card textarea, .card button")
-        .forEach((el) => {
-          el.addEventListener("focus", function () {
-            const card = this.closest(".card");
-            if (card) setFocusedCard(card);
-          });
-        });
-
-      // Initial state: no card focused.
     </script>
   </body>
 </html>
