@@ -563,6 +563,7 @@
         { name: "Shanghai Stock Exchange (China)", code: "SHA" },
         { name: "Shenzhen Stock Exchange (China)", code: "SHE" },
         { name: "Singapore Exchange (Singapore)", code: "SGX" },
+        { name: "Taiwan Stock Exhange (Taiwan)", code: "TPE" },
         { name: "Tokyo Stock Exchange (Japan)", code: "TYO" },
         { name: "Toronto Stock Exchange (Canada)", code: "TSX" },
       ];
@@ -748,9 +749,17 @@
         } else {
           exchange = exchange.toUpperCase();
           ticker = ticker.toUpperCase();
-          if (exchange === "SHA") exchange = "SSE";
-          else if (exchange === "SHE") exchange = "SZSE";
-          else if (exchange === "ETR") exchange = "EXTR";
+
+          const exchangeMap = {
+            ETR: "EXTR",
+            SHA: "SSE",
+            SHE: "SZSE",
+            TPE: "TWSE",
+          };
+
+          if (exchangeMap[exchange]) {
+            exchange = exchangeMap[exchange];
+          }
 
           allTargets = [
             {
