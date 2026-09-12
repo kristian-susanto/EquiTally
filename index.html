@@ -10,7 +10,9 @@
     />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-      /* Integrated Unified Theme Variables */
+      /* ============================================================
+         UNIFIED THEME VARIABLES
+         ============================================================ */
       :root {
         --bg-body: #f1f5f9;
         --bg-card: #ffffff;
@@ -23,6 +25,7 @@
         --danger: #ef4444;
         --counter-color: #6c5ce7;
         --input-bg: #ffffff;
+        --output-bg: #f8fafc;
         --radio-bg: #f8f9fa;
         --link-bg: #f8f9fa;
         --link-text: #34495e;
@@ -38,12 +41,15 @@
         --primary-hover: #2563eb;
         --counter-color: #a29bfe;
         --input-bg: #334155;
+        --output-bg: #0f172a;
         --radio-bg: #334155;
         --link-bg: #334155;
         --link-text: #f1f5f9;
       }
 
-      /* Global Reset Styles */
+      /* ============================================================
+         GLOBAL RESET
+         ============================================================ */
       * {
         margin: 0;
         padding: 0;
@@ -63,27 +69,30 @@
         background-color: var(--bg-body);
         color: var(--text-main);
         min-height: 100vh;
-        padding: 30px 15px;
+        padding: 30px 15px 60px;
       }
 
-      /* Header styling */
+      /* ============================================================
+         HEADER
+         ============================================================ */
       header {
         max-width: 1200px;
         margin: 0 auto 2rem auto;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
         border-bottom: 2px solid var(--border);
         padding-bottom: 1rem;
       }
 
       header h1 {
-        font-size: 1.8rem;
+        font-size: clamp(1.4rem, 3.2vw, 1.8rem);
         font-weight: 800;
         letter-spacing: -0.5px;
       }
 
-      /* Theme toggle switcher style */
       .theme-toggle {
         background-color: var(--bg-card);
         color: var(--text-main);
@@ -102,7 +111,9 @@
         opacity: 0.9;
       }
 
-      /* Grid Workspace Setup */
+      /* ============================================================
+         DASHBOARD GRID
+         ============================================================ */
       .dashboard-grid {
         max-width: 1200px;
         margin: 0 auto;
@@ -111,7 +122,6 @@
         gap: 20px;
       }
 
-      /* Card components */
       .card {
         background: var(--bg-card);
         padding: 25px;
@@ -128,7 +138,6 @@
         padding-bottom: 0.5rem;
       }
 
-      /* Specific Widget Layout sizing */
       .stock-card {
         grid-column: span 7;
       }
@@ -140,20 +149,24 @@
         gap: 20px;
       }
 
-      /* Responsive Breakpoints */
+      .converter-card {
+        grid-column: span 12;
+      }
+
       @media (max-width: 992px) {
-        .stock-card {
-          grid-column: span 12;
-        }
+        .stock-card,
         .side-panel {
           grid-column: span 12;
         }
       }
 
-      /* Form controls styles */
+      /* ============================================================
+         FORM CONTROLS
+         ============================================================ */
       .input-group {
         margin-bottom: 15px;
       }
+
       label {
         display: block;
         margin-bottom: 6px;
@@ -161,8 +174,8 @@
         font-size: 14px;
         color: var(--text-secondary);
       }
-      input[type="text"],
-      datalist {
+
+      input[type="text"] {
         width: 100%;
         padding: 12px;
         border: 2px solid var(--border);
@@ -171,13 +184,14 @@
         border-radius: 8px;
         font-size: 15px;
       }
+
       input[type="text"]:focus,
       textarea:focus {
         border-color: var(--primary);
         outline: none;
       }
 
-      /* Checkbox & Radio layouts grid */
+      /* Checkbox / radio layouts */
       .checkbox-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
@@ -189,6 +203,7 @@
         max-height: 150px;
         overflow-y: auto;
       }
+
       .check-option,
       .radio-option {
         font-size: 13px;
@@ -197,6 +212,7 @@
         align-items: center;
         cursor: pointer;
       }
+
       .check-option input,
       .radio-option input {
         margin-right: 8px;
@@ -212,7 +228,9 @@
         border: 1px solid var(--border);
       }
 
-      /* Shared Button Styles */
+      /* ============================================================
+         SHARED BUTTONS
+         ============================================================ */
       button.btn-action {
         padding: 12px 20px;
         font-size: 14px;
@@ -225,35 +243,50 @@
         justify-content: center;
         gap: 5px;
       }
+
       .btn-primary {
         background-color: var(--primary);
-        color: white;
+        color: #ffffff;
       }
       .btn-primary:hover {
         background-color: var(--primary-hover);
       }
+
       .btn-danger {
         background-color: var(--danger);
-        color: white;
+        color: #ffffff;
       }
       .btn-danger:hover {
         opacity: 0.9;
       }
+
       .btn-success {
         background-color: var(--success);
-        color: white;
+        color: #ffffff;
       }
       .btn-success:hover {
         opacity: 0.9;
       }
 
-      /* Multi-tab link items wrapper styles */
+      .btn-ghost {
+        background-color: var(--bg-card);
+        color: var(--text-main);
+        border: 1px solid var(--border);
+      }
+      .btn-ghost:hover {
+        background-color: var(--radio-bg);
+      }
+
+      /* ============================================================
+         STOCK LINK LIST
+         ============================================================ */
       #linkContainer {
         margin-top: 15px;
         padding-top: 15px;
         border-top: 1px solid var(--border);
         display: none;
       }
+
       .link-item {
         display: block;
         background: var(--link-bg);
@@ -265,10 +298,12 @@
         font-size: 13px;
         border-left: 4px solid var(--primary);
       }
+
       .link-item:hover {
         background: var(--primary);
-        color: white;
+        color: #ffffff;
       }
+
       .hint {
         font-size: 11px;
         color: var(--text-secondary);
@@ -276,7 +311,9 @@
         margin-top: 10px;
       }
 
-      /* Click Counter UI designs */
+      /* ============================================================
+         CLICK COUNTER
+         ============================================================ */
       .counter-display {
         font-size: 3.5rem;
         font-weight: 800;
@@ -285,30 +322,36 @@
         text-align: center;
         transition: transform 0.1s ease;
       }
+
       .counter-buttons {
         display: flex;
         gap: 10px;
       }
 
-      /* Text Case Converter Component Layout */
-      textarea {
+      /* ============================================================
+         TEXT CASE CONVERTER (scoped)
+         ============================================================ */
+      .case-card textarea {
         width: 100%;
         height: 120px;
         padding: 12px;
         border: 2px solid var(--border);
         border-radius: 8px;
         font-size: 14px;
-        background: var(--bg-card);
+        background: var(--input-bg);
         color: var(--text-main);
         margin-bottom: 10px;
         resize: vertical;
+        outline: none;
       }
+
       .text-controls {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
         gap: 6px;
         margin-bottom: 12px;
       }
+
       .text-controls button {
         padding: 8px 4px;
         border: 1px solid var(--border);
@@ -319,13 +362,133 @@
         font-size: 11px;
         font-weight: 600;
       }
+
       .text-controls button:hover {
         background: var(--primary);
-        color: white;
+        color: #ffffff;
       }
+
       .text-actions {
         display: flex;
         gap: 10px;
+      }
+
+      /* ============================================================
+         ZEROSHIFT CONVERTER
+         ============================================================ */
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 18px;
+      }
+
+      .chip {
+        font-size: 12.5px;
+        color: var(--primary);
+        background: var(--radio-bg);
+        border: 1px solid var(--border);
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+
+      .chip b {
+        color: var(--primary);
+        font-weight: 700;
+      }
+
+      .converter-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+      }
+
+      @media (max-width: 820px) {
+        .converter-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .panel {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+
+      .panel-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+
+      .panel-head label {
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin-bottom: 0;
+      }
+
+      .panel-meta {
+        font-size: 12px;
+        color: var(--text-secondary);
+        text-align: right;
+      }
+
+      .converter-card textarea {
+        width: 100%;
+        min-height: min(40vh, 300px);
+        padding: 14px 16px;
+        border: 2px solid var(--border);
+        border-radius: 12px;
+        background: var(--input-bg);
+        color: var(--text-main);
+        font-family:
+          ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono",
+          monospace;
+        font-size: 14.5px;
+        line-height: 1.7;
+        resize: vertical;
+        outline: none;
+      }
+
+      #output {
+        background: var(--output-bg);
+      }
+
+      .options {
+        margin-top: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: var(--text-secondary);
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .options input[type="checkbox"] {
+        width: 17px;
+        height: 17px;
+        accent-color: var(--primary);
+        cursor: pointer;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 18px;
+      }
+
+      .foot {
+        margin: 18px 2px 0;
+        font-size: 12.5px;
+        color: var(--text-secondary);
+        line-height: 1.6;
       }
     </style>
   </head>
@@ -342,7 +505,9 @@
     </header>
 
     <main class="dashboard-grid">
-      <!-- Section 1: Stock Multi-Tab Researcher -->
+      <!-- ==========================================================
+           SECTION 1 — Stock Multi-Tab Researcher
+           ========================================================== -->
       <section class="card stock-card">
         <h2>📊 Stock Multi-Tab Researcher</h2>
 
@@ -456,7 +621,7 @@
         </div>
 
         <div id="linkContainer">
-          <label>Manual Generated Links Links:</label>
+          <label>Manual Generated Links:</label>
           <div id="linkList"></div>
         </div>
         <p id="hintText" class="hint" style="display: none">
@@ -465,9 +630,11 @@
         </p>
       </section>
 
-      <!-- Panel Side Groups (Counter + Text Case) -->
+      <!-- ==========================================================
+           SIDE PANEL — Counter + Text Case Converter
+           ========================================================== -->
       <div class="side-panel">
-        <!-- Section 2: Click Counter -->
+        <!-- Click Counter -->
         <section class="card">
           <h2>🖱️ Click Counter</h2>
           <div class="counter-display" id="counter-value">0</div>
@@ -489,8 +656,8 @@
           </div>
         </section>
 
-        <!-- Section 3: Text Case Converter -->
-        <section class="card">
+        <!-- Text Case Converter -->
+        <section class="card case-card">
           <h2>🔤 Text Case Converter</h2>
           <textarea
             id="textInput"
@@ -525,10 +692,79 @@
           </div>
         </section>
       </div>
+
+      <!-- ==========================================================
+           SECTION 4 — ZeroShift Value Scaler
+           ========================================================== -->
+      <section class="card converter-card">
+        <h2>🔢 ZeroShift — Value Scaler</h2>
+
+        <div class="legend">
+          <span class="chip"><b>K</b> ×1,000</span>
+          <span class="chip"><b>M</b> ×1,000,000</span>
+          <span class="chip"><b>B</b> ×1,000,000,000</span>
+          <span class="chip"><b>T</b> ×1,000,000,000,000</span>
+        </div>
+
+        <div class="converter-grid">
+          <div class="panel">
+            <div class="panel-head">
+              <label for="input">Input</label>
+              <span class="panel-meta">one value per line</span>
+            </div>
+            <textarea
+              id="input"
+              spellcheck="false"
+              placeholder="9.26 T&#10;−2.05%&#10;9.70 T&#10;+4.25%&#10;10.33 T&#10;+9.01%"
+            ></textarea>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <label for="output">Output</label>
+              <span class="panel-meta" id="stats"></span>
+            </div>
+            <textarea
+              id="output"
+              spellcheck="false"
+              readonly
+              wrap="off"
+              placeholder="Converted values will appear here…"
+            ></textarea>
+          </div>
+        </div>
+
+        <label class="options">
+          <input type="checkbox" id="reverseOrder" checked />
+          Reverse order (Right-to-Left paste) — Adjust it according to the
+          orientation of your sheet
+        </label>
+
+        <div class="actions">
+          <button id="copyBtn" class="btn-action btn-primary" type="button">
+            Copy result
+          </button>
+          <button id="sampleBtn" class="btn-action btn-ghost" type="button">
+            Load sample
+          </button>
+          <button id="clearBtn" class="btn-action btn-ghost" type="button">
+            Clear
+          </button>
+        </div>
+
+        <p class="foot">
+          Output values are separated by tabs (horizontal). Each value will
+          paste into its own cell across a row in your spreadsheet. Format uses
+          commas as thousand separators and no decimal point. Percentage lines
+          are ignored automatically.
+        </p>
+      </section>
     </main>
 
     <script>
-      /* --- DOM Elements Context Setup --- */
+      /* ============================================================
+         GLOBAL DOM REFERENCES
+         ============================================================ */
       const exchangeInput = document.getElementById("exchange_name");
       const tickerInput = document.getElementById("ticker_symbol");
       const radioButtons = document.querySelectorAll('input[name="source"]');
@@ -542,6 +778,9 @@
 
       let count = 0;
 
+      /* ============================================================
+         EXCHANGE DATA
+         ============================================================ */
       const exchanges = [
         {
           name: "Abu Dhabi Securities Exchange (United Arab Emirates)",
@@ -563,7 +802,7 @@
         { name: "Shanghai Stock Exchange (China)", code: "SHA" },
         { name: "Shenzhen Stock Exchange (China)", code: "SHE" },
         { name: "Singapore Exchange (Singapore)", code: "SGX" },
-        { name: "Taiwan Stock Exhange (Taiwan)", code: "TPE" },
+        { name: "Taiwan Stock Exchange (Taiwan)", code: "TPE" },
         { name: "Tokyo Stock Exchange (Japan)", code: "TYO" },
         { name: "Toronto Stock Exchange (Canada)", code: "TSX" },
       ];
@@ -579,7 +818,9 @@
         updatePlaceholders();
       });
 
-      /* --- Global Theme Logic Switcher --- */
+      /* ============================================================
+         THEME LOGIC
+         ============================================================ */
       function setTheme(theme) {
         document.documentElement.setAttribute("data-theme", theme);
         localStorage.setItem("theme", theme);
@@ -610,7 +851,9 @@
         };
       }
 
-      /* --- Stock Logic Methods --- */
+      /* ============================================================
+         STOCK RESEARCHER LOGIC
+         ============================================================ */
       function toTitleCase(str) {
         return str.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
       }
@@ -841,7 +1084,9 @@
         );
       }
 
-      /* --- Counter Logic --- */
+      /* ============================================================
+         COUNTER LOGIC
+         ============================================================ */
       clickBtn.addEventListener("click", () => {
         count++;
         counterDisplay.textContent = count;
@@ -874,13 +1119,11 @@
         });
       });
 
+      /* ============================================================
+         GLOBAL KEYBOARD SHORTCUTS
+         ============================================================ */
       window.addEventListener("keydown", (e) => {
-        // Ignore if the user is typing inside the textarea
-        if (e.target.tagName === "TEXTAREA") {
-          return;
-        }
-
-        // Intercept Refresh button (Ctrl+R / F5)
+        // Intercept Refresh (Ctrl+R / Cmd+R / F5) everywhere
         if (((e.ctrlKey || e.metaKey) && e.key === "r") || e.key === "F5") {
           e.preventDefault();
           Swal.fire(
@@ -892,14 +1135,20 @@
           return;
         }
 
-        // Run processSearch() when the Enter key is pressed
+        // Ignore Enter inside text inputs / textareas
+        const tag = (e.target.tagName || "").toUpperCase();
+        if (tag === "TEXTAREA" || tag === "INPUT") return;
+
+        // Enter anywhere else triggers stock search
         if (e.key === "Enter") {
-          e.preventDefault(); // Prevent triggering other buttons/elements that currently have focus
+          e.preventDefault();
           processSearch();
         }
       });
 
-      /* --- Text Transformer Case Logic --- */
+      /* ============================================================
+         TEXT CASE CONVERTER LOGIC
+         ============================================================ */
       function transformText(type) {
         let str = textInput.value;
         if (!str.trim()) {
@@ -966,6 +1215,213 @@
         textInput.value = "";
         Swal.fire(getToastConfig("success", "Text records purged safely."));
       }
+
+      /* ============================================================
+         ZEROSHIFT VALUE SCALER LOGIC
+         ============================================================ */
+      (function () {
+        "use strict";
+
+        var inputEl = document.getElementById("input");
+        var outputEl = document.getElementById("output");
+        var statsEl = document.getElementById("stats");
+        var copyBtn = document.getElementById("copyBtn");
+        var sampleBtn = document.getElementById("sampleBtn");
+        var clearBtn = document.getElementById("clearBtn");
+        var reverseCheckbox = document.getElementById("reverseOrder");
+
+        /* Multipliers as BigInt so large values stay exact */
+        var MULT = {
+          K: 1000n,
+          M: 1000000n,
+          B: 1000000000n,
+          T: 1000000000000n,
+        };
+
+        /* Invisible bidi / zero-width control characters */
+        var INVISIBLE = /[\u200b-\u200f\u202a-\u202e\u2066-\u2069\ufeff]/g;
+
+        var SAMPLE = [
+          "9.26 T",
+          "\u22122.05%",
+          "9.70 T",
+          "+4.25%",
+          "10.33 T",
+          "+9.01%",
+          "9.90 T",
+          "+1.90%",
+          "10.55 T",
+          "+13.93%",
+          "10.06 T",
+          "+3.75%",
+          "10.12 T",
+          "\u22122.02%",
+          "11.64 T",
+          "+17.60%",
+        ].join("\n");
+
+        /* ---------- Helpers ---------- */
+
+        function groupThousands(digits) {
+          return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        /* Convert a single line.
+             { value: "..." }  -> converted
+             { skip: true }    -> blank line or percentage line
+             { invalid: true } -> not recognised                          */
+        function convertLine(line) {
+          var s = String(line).replace(INVISIBLE, "").trim();
+          if (!s) return { skip: true };
+          if (s.indexOf("%") !== -1) return { skip: true };
+
+          s = s
+            .replace(/\u2212/g, "-")
+            .replace(/[\u2013\u2014]/g, "-")
+            .replace(/\s+/g, "");
+
+          var m = s.match(/^([+-]?)(\d+(?:[.,]\d+)?)([KMBT])?$/i);
+          if (!m) return { invalid: true };
+
+          var numStr = m[2];
+
+          if (numStr.indexOf(",") !== -1 && numStr.indexOf(".") !== -1) {
+            numStr = numStr.replace(/,/g, "");
+          } else {
+            numStr = numStr.replace(",", ".");
+          }
+
+          var suffix = (m[3] || "").toUpperCase();
+          var mult = MULT[suffix] || 1n;
+          var isNeg = m[1] === "-";
+
+          var parts = numStr.split(".");
+          var intPart = parts[0];
+          var fracPart = parts[1] || "";
+
+          var digits = (intPart + fracPart).replace(/^0+(?=\d)/, "") || "0";
+          var scale = 10n ** BigInt(fracPart.length);
+
+          var value = (BigInt(digits) * mult) / scale;
+
+          var out = groupThousands(value.toString());
+          return { value: (isNeg && value !== 0n ? "-" : "") + out };
+        }
+
+        /* ---------- Render ---------- */
+
+        function render() {
+          var lines = inputEl.value.split(/\r?\n/);
+          var results = [];
+          var converted = 0;
+          var skipped = 0;
+          var invalid = 0;
+
+          for (var i = 0; i < lines.length; i++) {
+            var r = convertLine(lines[i]);
+            if (r.skip) {
+              skipped++;
+              continue;
+            }
+            if (r.invalid) {
+              invalid++;
+              continue;
+            }
+            results.push(r.value);
+            converted++;
+          }
+
+          if (reverseCheckbox.checked) {
+            results.reverse();
+          }
+
+          outputEl.value = results.join("\t");
+
+          if (!inputEl.value.trim()) {
+            statsEl.textContent = "";
+          } else {
+            var bits = [converted + " converted"];
+            if (skipped) bits.push(skipped + " skipped");
+            if (invalid) bits.push(invalid + " unrecognised");
+            statsEl.textContent = bits.join(" · ");
+          }
+        }
+
+        /* ---------- Clipboard ---------- */
+
+        function copyTextToClipboard(text) {
+          if (navigator.clipboard && window.isSecureContext) {
+            return navigator.clipboard
+              .writeText(text)
+              .then(function () {
+                return true;
+              })
+              .catch(function () {
+                return legacyCopy(text);
+              });
+          }
+          return Promise.resolve(legacyCopy(text));
+        }
+
+        function legacyCopy(text) {
+          var ta = document.createElement("textarea");
+          ta.value = text;
+          ta.setAttribute("readonly", "");
+          ta.style.position = "fixed";
+          ta.style.top = "-1000px";
+          ta.style.opacity = "0";
+          document.body.appendChild(ta);
+          ta.select();
+          ta.setSelectionRange(0, ta.value.length);
+          var ok = false;
+          try {
+            ok = document.execCommand("copy");
+          } catch (e) {
+            ok = false;
+          }
+          document.body.removeChild(ta);
+          return ok;
+        }
+
+        /* ---------- Events ---------- */
+
+        inputEl.addEventListener("input", render);
+        reverseCheckbox.addEventListener("change", render);
+
+        copyBtn.addEventListener("click", function () {
+          var text = outputEl.value.trim();
+          if (!text) {
+            Swal.fire(getToastConfig("warning", "Nothing to copy yet."));
+            return;
+          }
+          copyTextToClipboard(text).then(function (ok) {
+            Swal.fire(
+              getToastConfig(
+                ok ? "success" : "error",
+                ok
+                  ? "Copied! Paste it into your spreadsheet row."
+                  : "Copy failed — please select and copy manually.",
+              ),
+            );
+          });
+        });
+
+        sampleBtn.addEventListener("click", function () {
+          inputEl.value = SAMPLE;
+          render();
+          inputEl.focus();
+        });
+
+        clearBtn.addEventListener("click", function () {
+          inputEl.value = "";
+          outputEl.value = "";
+          statsEl.textContent = "";
+          inputEl.focus();
+        });
+
+        /* Initial state */
+        render();
+      })();
     </script>
   </body>
 </html>
