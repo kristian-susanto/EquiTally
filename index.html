@@ -632,16 +632,6 @@
       exchangeInput.addEventListener("input", handleInputCase);
       tickerInput.addEventListener("input", handleInputCase);
 
-      // // Run processSearch() when the Enter key is pressed in the Exchange or Ticker input
-      // [exchangeInput, tickerInput].forEach((input) => {
-      //   input.addEventListener("keydown", (e) => {
-      //     if (e.key === "Enter") {
-      //       e.preventDefault(); // Prevent default form reload/submission if applicable
-      //       processSearch();
-      //     }
-      //   });
-      // });
-
       function updatePlaceholders() {
         const selectedSource = document.querySelector(
           'input[name="source"]:checked',
