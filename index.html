@@ -1135,17 +1135,18 @@
           return;
         }
 
-        // Ignore Enter inside text inputs / textareas
+        // Hanya abaikan Enter jika berada di dalam TEXTAREA (untuk membuat baris baru)
+        // Jika berada di INPUT (teks, checkbox, radio), Enter akan memicu pencarian
         const tag = (e.target.tagName || "").toUpperCase();
-        if (tag === "TEXTAREA" || tag === "INPUT") return;
+        if (tag === "TEXTAREA") return;
 
-        // Enter anywhere else triggers stock search
+        // Enter di mana saja (termasuk di dalam kolom input) akan memicu pencarian saham
         if (e.key === "Enter") {
           e.preventDefault();
           processSearch();
         }
       });
-
+      
       /* ============================================================
          TEXT CASE CONVERTER LOGIC
          ============================================================ */
