@@ -204,6 +204,13 @@
         overflow-y: auto;
       }
 
+      /* NEW: visually lock the data-point grid while Package mode is active */
+      .checkbox-grid.is-disabled {
+        opacity: 0.45;
+        pointer-events: none;
+        user-select: none;
+      }
+
       .check-option,
       .radio-option {
         font-size: 13px;
@@ -226,6 +233,21 @@
         padding: 10px;
         border-radius: 8px;
         border: 1px solid var(--border);
+        flex-wrap: wrap;
+      }
+
+      /* NEW: Package mode explainer note */
+      .source-note {
+        display: none;
+        margin-top: 8px;
+        font-size: 11.5px;
+        line-height: 1.55;
+        color: var(--text-secondary);
+        text-align: left;
+        background: var(--radio-bg);
+        border: 1px dashed var(--border);
+        border-radius: 8px;
+        padding: 8px 10px;
       }
 
       /* ============================================================
@@ -374,7 +396,7 @@
       }
 
       /* ============================================================
-         ZEROSHIFT CONVERTER
+         FINANCIAL SHORTHAND CONVERTER
          ============================================================ */
       .legend {
         display: flex;
@@ -582,25 +604,39 @@
           </div>
         </div>
 
+        <!-- ======================================================
+             DATA SOURCE SUPPORT — Package is now the default
+             ====================================================== -->
         <div class="input-group">
           <label>Data Source Support</label>
           <div class="radio-group">
             <label class="radio-option"
-              ><input
-                type="radio"
-                name="source"
-                value="stockanalysis"
-                checked
-              />StockAnalysis</label
+              ><input type="radio" name="source" value="package" checked />
+              Package</label
             >
             <label class="radio-option"
-              ><input
-                type="radio"
-                name="source"
-                value="tradingview"
-              />TradingView</label
+              ><input type="radio" name="source" value="stockanalysis" />
+              StockAnalysis</label
+            >
+            <label class="radio-option"
+              ><input type="radio" name="source" value="tradingview" />
+              TradingView</label
             >
           </div>
+          <p class="source-note" id="packageNote">
+            <b>Package mode</b> ignores the data-point checklist and opens a
+            fixed bundle of <b>8 tabs</b> at once:
+            <br />
+            • 🏢 Overview — StockAnalysis
+            <br />
+            • 📊 Ratios — StockAnalysis &amp; TradingView
+            <br />
+            • ⏳ Historical Data — StockAnalysis
+            <br />
+            • 📑 Income Statement — StockAnalysis &amp; TradingView
+            <br />
+            • ⚖️ Balance Sheet — StockAnalysis &amp; TradingView
+          </p>
         </div>
 
         <div style="display: flex; gap: 10px; margin-top: 15px">
@@ -694,10 +730,10 @@
       </div>
 
       <!-- ==========================================================
-           SECTION 4 — ZeroShift Value Scaler
+           SECTION 4 — Financial Shorthand Converter
            ========================================================== -->
       <section class="card converter-card">
-        <h2>🔢 ZeroShift — Value Scaler</h2>
+        <h2>🔢 Financial Shorthand Converter</h2>
 
         <div class="legend">
           <span class="chip"><b>K</b> ×1,000</span>
@@ -754,9 +790,9 @@
 
         <p class="foot">
           Output values are separated by tabs (horizontal). Each value will
-          paste into its own cell across a row in your spreadsheet. Format uses
-          commas as thousand separators and no decimal point. Percentage lines
-          are ignored automatically.
+          paste into its own cell across a row in your sheet. Format uses commas
+          as thousand separators and no decimal point. Percentage lines are
+          ignored automatically.
         </p>
       </section>
     </main>
@@ -768,6 +804,8 @@
       const exchangeInput = document.getElementById("exchange_name");
       const tickerInput = document.getElementById("ticker_symbol");
       const radioButtons = document.querySelectorAll('input[name="source"]');
+      const checkboxGrid = document.getElementById("checkboxGrid");
+      const packageNote = document.getElementById("packageNote");
       const textInput = document.getElementById("textInput");
       const themeMasterBtn = document.getElementById("themeMasterBtn");
       const themeMasterText = document.getElementById("themeMasterText");
@@ -815,7 +853,7 @@
           option.setAttribute("data-code", ex.code);
           list.appendChild(option);
         });
-        updatePlaceholders();
+        updateSourceUI();
       });
 
       /* ============================================================
@@ -854,62 +892,270 @@
       /* ============================================================
          STOCK RESEARCHER LOGIC
          ============================================================ */
+
+      /* TradingView exchange aliases */
+      const TV_EXCHANGE_MAP = {
+        ETR: "EXTR",
+        SHA: "SSE",
+        SHE: "SZSE",
+        TPE: "TWSE",
+      };
+
       function toTitleCase(str) {
         return str.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
       }
 
+      function getSelectedSource() {
+        return document.querySelector('input[name="source"]:checked').value;
+      }
+
+      function getSelectedDataPoints() {
+        return Array.from(
+          document.querySelectorAll("#checkboxGrid input:checked"),
+        ).map((cb) => cb.value);
+      }
+
+      /* Resolve a typed exchange name into its short code (fallback: as typed) */
+      function resolveExchangeCode(rawValue) {
+        const raw = String(rawValue || "").trim();
+        const found = exchanges.find(
+          (ex) => ex.name.toLowerCase() === raw.toLowerCase(),
+        );
+        return found ? found.code : raw;
+      }
+
+      /* StockAnalysis base URL (lower-case exchange + ticker) */
+      function saBaseUrl(exchangeCode, ticker) {
+        const ex = String(exchangeCode).toLowerCase();
+        const tk = String(ticker).toLowerCase();
+        return ["otc", "nasdaq", "nyse", "amex"].includes(ex)
+          ? `https://www.stockanalysis.com/stocks/${tk}`
+          : `https://www.stockanalysis.com/quote/${ex}/${tk}`;
+      }
+
+      /* TradingView exchange code (upper-case, aliases applied) */
+      function mapTvExchange(exchangeCode) {
+        const ex = String(exchangeCode).toUpperCase();
+        return TV_EXCHANGE_MAP[ex] || ex;
+      }
+
+      function tvSymbol(exchangeCode, ticker) {
+        return `${mapTvExchange(exchangeCode)}-${String(ticker).toUpperCase()}`;
+      }
+
+      /* ---------- Target builders ---------- */
+
+      function buildStockAnalysisTargets(exchangeCode, ticker) {
+        const ex = String(exchangeCode).toLowerCase();
+        const tk = String(ticker).toLowerCase();
+        const baseUrl = saBaseUrl(ex, tk);
+
+        return [
+          {
+            id: "news",
+            name: "📰 Latest News",
+            url: `https://www.google.com/search?q=${ex}:%20${tk}&tbm=nws`,
+          },
+          { id: "overview", name: "🏢 Overview", url: `${baseUrl}/company` },
+          {
+            id: "stats",
+            name: "📊 Financial Ratios",
+            url: `${baseUrl}/financials/ratios/?p=quarterly`,
+          },
+          {
+            id: "history",
+            name: "⏳ Historical Data",
+            url: `${baseUrl}/history/`,
+          },
+          {
+            id: "income",
+            name: "📑 Income Statement",
+            url: `${baseUrl}/financials/income-statement/?p=quarterly`,
+          },
+          {
+            id: "balance",
+            name: "⚖️ Balance Sheet",
+            url: `${baseUrl}/financials/balance-sheet/?p=quarterly`,
+          },
+          {
+            id: "cash",
+            name: "🔄 Cash Flow",
+            url: `${baseUrl}/financials/cash-flow-statement/?p=quarterly`,
+          },
+          {
+            id: "revenue",
+            name: "💰 Revenue",
+            url: `${baseUrl}/financials/metrics/`,
+          },
+          {
+            id: "dividends",
+            name: "💸 Dividends",
+            url: `${baseUrl}/dividend/`,
+          },
+        ];
+      }
+
+      function buildTradingViewTargets(exchangeCode, ticker) {
+        const tvEx = mapTvExchange(exchangeCode);
+        const tk = String(ticker).toUpperCase();
+        const base = `https://www.tradingview.com/symbols/${tvEx}-${tk}`;
+
+        return [
+          {
+            id: "news",
+            name: "📰 Latest News",
+            url: `https://www.google.com/search?q=${tvEx}:%20${tk}&tbm=nws`,
+          },
+          { id: "overview", name: "🏢 Overview", url: `${base}/` },
+          {
+            id: "stats",
+            name: "📊 Financial Stats",
+            url: `${base}/financials-statistics-and-ratios/?statistics-period=FQ&selected=price_earnings%2Cprice_book`,
+          },
+          {
+            id: "history",
+            name: "⏳ Historical Data",
+            url: `${base}/?timeframe=120M`,
+          },
+          {
+            id: "income",
+            name: "📑 Income Statement",
+            url: `${base}/https://www.tradingview.com/symbols/NASDAQ-NVDA/financials-income-statement/?statements-period=FQ&selected=total_revenue%2Cnet_income%2Cbasic_shares_outstanding`,
+          },
+          {
+            id: "balance",
+            name: "⚖️ Balance Sheet",
+            url: `${base}/financials-balance-sheet/?statements-period=FQ&selected=total_equity`,
+          },
+          {
+            id: "cash",
+            name: "🔄 Cash Flow",
+            url: `${base}/financials-cash-flow/?statements-period=FQ`,
+          },
+          {
+            id: "revenue",
+            name: "💰 Revenue",
+            url: `${base}/financials-revenue/`,
+          },
+          {
+            id: "dividends",
+            name: "💸 Dividends",
+            url: `${base}/financials-dividends/`,
+          },
+        ];
+      }
+
+      /* ---------- Package bundle: fixed 8 tabs, no checklist needed ---------- */
+      function buildPackageTargets(exchangeCode, ticker) {
+        const sa = saBaseUrl(exchangeCode, ticker);
+        const tv = `https://www.tradingview.com/symbols/${tvSymbol(
+          exchangeCode,
+          ticker,
+        )}`;
+
+        return [
+          {
+            id: "pkg-overview-sa",
+            name: "🏢 Overview — StockAnalysis",
+            url: `${sa}/company`,
+          },
+          {
+            id: "pkg-ratios-sa",
+            name: "📊 Ratios — StockAnalysis",
+            url: `${sa}/financials/ratios/?p=quarterly`,
+          },
+          {
+            id: "pkg-ratios-tv",
+            name: "📊 Ratios — TradingView",
+            url: `${tv}/financials-statistics-and-ratios/?statistics-period=FQ&selected=price_earnings%2Cprice_book`,
+          },
+          {
+            id: "pkg-history-sa",
+            name: "⏳ Historical Data — StockAnalysis",
+            url: `${sa}/history/`,
+          },
+          {
+            id: "pkg-income-sa",
+            name: "📑 Income Statement — StockAnalysis",
+            url: `${sa}/financials/income-statement/?p=quarterly`,
+          },
+          {
+            id: "pkg-income-tv",
+            name: "📑 Income Statement — TradingView",
+            url: `${tv}/https://www.tradingview.com/symbols/NASDAQ-NVDA/financials-income-statement/?statements-period=FQ&selected=total_revenue%2Cnet_income%2Cbasic_shares_outstanding`,
+          },
+          {
+            id: "pkg-balance-sa",
+            name: "⚖️ Balance Sheet — StockAnalysis",
+            url: `${sa}/financials/balance-sheet/?p=quarterly`,
+          },
+          {
+            id: "pkg-balance-tv",
+            name: "⚖️ Balance Sheet — TradingView",
+            url: `${tv}/financials-balance-sheet/?statements-period=FQ&selected=total_equity`,
+          },
+        ];
+      }
+
+      /* ---------- Input casing behaviour ---------- */
       function handleInputCase(e) {
-        const source = document.querySelector(
-          'input[name="source"]:checked',
-        ).value;
+        const source = getSelectedSource();
+
         if (e.target.id === "exchange_name") {
           e.target.value = toTitleCase(e.target.value);
-        } else {
-          e.target.value =
-            source === "stockanalysis"
-              ? e.target.value.toLowerCase()
-              : e.target.value.toUpperCase();
+          return;
         }
+
+        /* Ticker field */
+        if (source === "stockanalysis") {
+          e.target.value = e.target.value.toLowerCase();
+        } else if (source === "tradingview") {
+          e.target.value = e.target.value.toUpperCase();
+        }
+        /* Package mode: keep exactly as typed (each builder normalises) */
       }
 
       exchangeInput.addEventListener("input", handleInputCase);
       tickerInput.addEventListener("input", handleInputCase);
 
-      function updatePlaceholders() {
-        const selectedSource = document.querySelector(
-          'input[name="source"]:checked',
-        ).value;
-        tickerInput.value =
-          selectedSource === "stockanalysis"
-            ? tickerInput.value.toLowerCase()
-            : tickerInput.value.toUpperCase();
+      /* ---------- Source switching UI ---------- */
+      function updateSourceUI() {
+        const source = getSelectedSource();
+        const isPackage = source === "package";
+
+        /* Lock / unlock the data-point checklist */
+        checkboxGrid.classList.toggle("is-disabled", isPackage);
+        checkboxGrid
+          .querySelectorAll('input[type="checkbox"]')
+          .forEach((cb) => (cb.disabled = isPackage));
+
+        /* Show the Package explainer only in Package mode */
+        packageNote.style.display = isPackage ? "block" : "none";
+
+        /* Ticker casing */
+        if (source === "stockanalysis") {
+          tickerInput.value = tickerInput.value.toLowerCase();
+        } else if (source === "tradingview") {
+          tickerInput.value = tickerInput.value.toUpperCase();
+        }
       }
 
-      radioButtons.forEach((r) =>
-        r.addEventListener("change", updatePlaceholders),
-      );
+      radioButtons.forEach((r) => r.addEventListener("change", updateSourceUI));
 
       function toggleAllCheckboxes(selectAll) {
-        document
-          .querySelectorAll('#checkboxGrid input[type="checkbox"]')
+        if (getSelectedSource() === "package") return;
+        checkboxGrid
+          .querySelectorAll('input[type="checkbox"]')
           .forEach((cb) => (cb.checked = selectAll));
       }
 
+      /* ---------- Main action ---------- */
       function processSearch() {
-        let exchangeName = exchangeInput.value.trim();
-        let foundEx = exchanges.find(
-          (ex) => ex.name.toLowerCase() === exchangeName.toLowerCase(),
-        );
-        let exchange = foundEx ? foundEx.code : exchangeName;
-        let ticker = tickerInput.value.trim();
-        const source = document.querySelector(
-          'input[name="source"]:checked',
-        ).value;
-        const selectedData = Array.from(
-          document.querySelectorAll("#checkboxGrid input:checked"),
-        ).map((cb) => cb.value);
+        const rawExchange = exchangeInput.value.trim();
+        const ticker = tickerInput.value.trim();
+        const source = getSelectedSource();
 
-        if (!exchange || !ticker) {
+        if (!rawExchange || !ticker) {
           Swal.fire(
             getToastConfig(
               "error",
@@ -918,132 +1164,33 @@
           );
           return;
         }
-        if (selectedData.length === 0) {
-          Swal.fire(
-            getToastConfig(
-              "warning",
-              "Select at least one tracking data configuration point!",
-            ),
-          );
-          return;
-        }
 
-        let allTargets = [];
-        if (source === "stockanalysis") {
-          exchange = exchange.toLowerCase();
-          ticker = ticker.toLowerCase();
-          let baseUrl = ["otc", "nasdaq", "nyse", "amex"].includes(exchange)
-            ? `https://www.stockanalysis.com/stocks/${ticker}`
-            : `https://www.stockanalysis.com/quote/${exchange}/${ticker}`;
+        const exchangeCode = resolveExchangeCode(rawExchange);
+        let targets = [];
 
-          allTargets = [
-            {
-              id: "news",
-              name: "📰 Latest News",
-              url: `https://www.google.com/search?q=${exchange}:%20${ticker}&tbm=nws`,
-            },
-            { id: "overview", name: "🏢 Overview", url: `${baseUrl}/company` },
-            {
-              id: "stats",
-              name: "📊 Financial Ratios",
-              url: `${baseUrl}/financials/ratios/?p=quarterly`,
-            },
-            {
-              id: "history",
-              name: "⏳ Historical Data",
-              url: `${baseUrl}/history/`,
-            },
-            {
-              id: "income",
-              name: "📑 Income Statement",
-              url: `${baseUrl}/financials/income-statement/?p=quarterly`,
-            },
-            {
-              id: "balance",
-              name: "⚖️ Balance Sheet",
-              url: `${baseUrl}/financials/balance-sheet/?p=quarterly`,
-            },
-            {
-              id: "cash",
-              name: "🔄 Cash Flow",
-              url: `${baseUrl}/financials/cash-flow-statement/?p=quarterly`,
-            },
-            {
-              id: "revenue",
-              name: "💰 Revenue",
-              url: `${baseUrl}/financials/metrics/`,
-            },
-            {
-              id: "dividends",
-              name: "💸 Dividends",
-              url: `${baseUrl}/dividend/`,
-            },
-          ];
+        if (source === "package") {
+          /* Package mode: always the fixed 8-tab bundle */
+          targets = buildPackageTargets(exchangeCode, ticker);
         } else {
-          exchange = exchange.toUpperCase();
-          ticker = ticker.toUpperCase();
-
-          const exchangeMap = {
-            ETR: "EXTR",
-            SHA: "SSE",
-            SHE: "SZSE",
-            TPE: "TWSE",
-          };
-
-          if (exchangeMap[exchange]) {
-            exchange = exchangeMap[exchange];
+          const selectedData = getSelectedDataPoints();
+          if (selectedData.length === 0) {
+            Swal.fire(
+              getToastConfig(
+                "warning",
+                "Select at least one tracking data configuration point!",
+              ),
+            );
+            return;
           }
 
-          allTargets = [
-            {
-              id: "news",
-              name: "📰 Latest News",
-              url: `https://www.google.com/search?q=${exchange}:%20${ticker}&tbm=nws`,
-            },
-            {
-              id: "overview",
-              name: "🏢 Overview",
-              url: `https://www.tradingview.com/symbols/${exchange}-${ticker}/`,
-            },
-            {
-              id: "stats",
-              name: "📊 Financial Stats",
-              url: `https://www.tradingview.com/symbols/${exchange}-${ticker}/financials-statistics-and-ratios/?statistics-period=FQ`,
-            },
-            {
-              id: "history",
-              name: "⏳ Historical Data",
-              url: `https://www.tradingview.com/symbols/${exchange}-${ticker}/?timeframe=120M`,
-            },
-            {
-              id: "income",
-              name: "📑 Income Statement",
-              url: `https://www.tradingview.com/symbols/${exchange}-${ticker}/financials-income-statement/?statements-period=FQ`,
-            },
-            {
-              id: "balance",
-              name: "⚖️ Balance Sheet",
-              url: `https://www.tradingview.com/symbols/${exchange}-${ticker}/financials-balance-sheet/?statements-period=FQ`,
-            },
-            {
-              id: "cash",
-              name: "🔄 Cash Flow",
-              url: `https://www.tradingview.com/symbols/${exchange}-${ticker}/financials-cash-flow/?statements-period=FQ`,
-            },
-            {
-              id: "revenue",
-              name: "💰 Revenue",
-              url: `https://www.tradingview.com/symbols/${exchange}-${ticker}/financials-revenue/`,
-            },
-            {
-              id: "dividends",
-              name: "💸 Dividends",
-              url: `https://www.tradingview.com/symbols/${exchange}-${ticker}/financials-dividends/`,
-            },
-          ];
+          const allTargets =
+            source === "stockanalysis"
+              ? buildStockAnalysisTargets(exchangeCode, ticker)
+              : buildTradingViewTargets(exchangeCode, ticker);
+
+          targets = allTargets.filter((t) => selectedData.includes(t.id));
         }
 
-        const targets = allTargets.filter((t) => selectedData.includes(t.id));
         Swal.fire(
           getToastConfig(
             "success",
@@ -1073,7 +1220,9 @@
       function resetStockForm() {
         exchangeInput.value = "";
         tickerInput.value = "";
-        toggleAllCheckboxes(false);
+        checkboxGrid
+          .querySelectorAll('input[type="checkbox"]')
+          .forEach((cb) => (cb.checked = false));
         document.getElementById("linkContainer").style.display = "none";
         document.getElementById("hintText").style.display = "none";
         Swal.fire(
@@ -1135,13 +1284,27 @@
           return;
         }
 
+<<<<<<< HEAD
+        // Handle Enter key for search
+=======
         // Hanya abaikan Enter jika berada di dalam TEXTAREA (untuk membuat baris baru)
         // Jika berada di INPUT (teks, checkbox, radio), Enter akan memicu pencarian
         const tag = (e.target.tagName || "").toUpperCase();
         if (tag === "TEXTAREA") return;
 
         // Enter di mana saja (termasuk di dalam kolom input) akan memicu pencarian saham
+>>>>>>> f80884bea9e0c0e14c5b03126dfb5111b7a3fde7
         if (e.key === "Enter") {
+          const tag = (e.target.tagName || "").toUpperCase();
+
+          // Ignore Enter inside textareas (Financial Shorthand Converter, Text Case Converter)
+          if (tag === "TEXTAREA") return;
+
+          // If focused on a button, let the button handle it naturally
+          if (tag === "BUTTON") return;
+
+          // For input elements (text, radio, checkbox), prevent default
+          // and trigger the stock search
           e.preventDefault();
           processSearch();
         }
@@ -1218,7 +1381,7 @@
       }
 
       /* ============================================================
-         ZEROSHIFT VALUE SCALER LOGIC
+         FINANCIAL SHORTHAND CONVERTER LOGIC
          ============================================================ */
       (function () {
         "use strict";
@@ -1400,7 +1563,7 @@
               getToastConfig(
                 ok ? "success" : "error",
                 ok
-                  ? "Copied! Paste it into your spreadsheet row."
+                  ? "Copied! Paste it into your sheet row."
                   : "Copy failed — please select and copy manually.",
               ),
             );
