@@ -58,7 +58,9 @@ Designed for investors, traders, and financial analysts to eliminate repetitive 
 - **Multi-Tab Execution Workflow:** Generates and launches custom analytical URLs instantly, mapping exchange codes and asset symbols dynamically.
 - **Cross-Global Exchange Resolution System:** Out-of-the-box support for international markets including NYSE, NASDAQ, IDX, HKG, SGX, LON, TYO, and more.
 - **Granular Data Point Filtering:** Choose precisely which dimensions to investigate (e.g., Latest News, Financial Ratios, Historical Trends, Balance Sheets, Income Statements, Cash Flow Metrics, or Dividend Trackers).
-- **Dual Data Source Support:** Dynamically switch the structural parsing logic between **StockAnalysis** or **TradingView** environments depending on your data pipeline preferences.
+- **Triple Data Source Support:** Switch the structural parsing logic between **Package**, **StockAnalysis**, or **TradingView** environments depending on your data pipeline preferences.
+- **Package Mode (Default):** A one-click bundled workflow that ignores the granular checklist and launches a fixed set of **8 analytical tabs** in a single action — perfect for deep-dive reconnaissance across both StockAnalysis and TradingView in parallel.
+- **Context-Aware Keyboard Shortcut:** Pressing `Enter` inside the Exchange Name field, Ticker Symbol field, or any radio option immediately triggers the research pipeline — no need to move your mouse to the button.
 - **Fail-Safe Manual Backup Registry:** Embedded link presentation tier ensures that if a modern browser blocks multi-popups, backup clickable links render seamlessly to bypass security restrictions.
 
 ### 2. 🖱️ Click Counter
@@ -98,6 +100,35 @@ A lightweight, responsive module that converts shorthand financial values with *
 
 ---
 
+## Stock Researcher — Data Source Modes
+
+The Stock Multi-Tab Researcher supports three distinct data-source modes, selectable through the **Data Source Support** radio panel. The selected mode determines which URLs are generated, how ticker casing is normalized, and whether the granular checklist is used.
+
+| Mode              | Default | Checklist Used? | Tabs Opened | Description                                                                                                                         |
+| ----------------- | :-----: | :-------------: | :---------: | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **Package**       |   ✅    |       No        |      8      | Fixed multi-source bundle (StockAnalysis + TradingView) launched simultaneously. Ideal for deep-dive reconnaissance.                |
+| **StockAnalysis** |    —    |       Yes       |    1 – 9    | Granular control; only the checklist-selected data points are opened. Tickers are normalized to lowercase.                          |
+| **TradingView**   |    —    |       Yes       |    1 – 9    | Granular control; only the checklist-selected data points are opened. Tickers are normalized to uppercase, exchange codes remapped. |
+
+### Package Mode — Fixed 8-Tab Bundle
+
+When **Package** is selected (the default), the data-point checklist is dimmed and disabled, and clicking **Open All Selected Tabs** immediately launches the following eight analytical views:
+
+| #   | Data Point          | Provider      | Purpose                                          |
+| --- | ------------------- | ------------- | ------------------------------------------------ |
+| 1   | 🏢 Overview         | StockAnalysis | Company profile, sector, business summary        |
+| 2   | 📊 Ratios           | StockAnalysis | Quarterly financial ratios and valuation metrics |
+| 3   | 📊 Ratios           | TradingView   | Quarterly statistics and ratios                  |
+| 4   | ⏳ Historical Data  | StockAnalysis | Full historical price and volume records         |
+| 5   | 📑 Income Statement | StockAnalysis | Quarterly income statement                       |
+| 6   | 📑 Income Statement | TradingView   | Quarterly income statement                       |
+| 7   | ⚖️ Balance Sheet    | StockAnalysis | Quarterly balance sheet                          |
+| 8   | ⚖️ Balance Sheet    | TradingView   | Quarterly balance sheet                          |
+
+Package mode is intentionally unconfigurable — it is a fixed reconnaissance bundle designed so that switching between providers is not necessary when you simply want comprehensive coverage of a ticker.
+
+---
+
 ## Global Core Layout Specifications
 
 - **100% Client-Side Architecture:** Runs completely inside the browser viewport. Zero database configurations, zero backend dependencies, and maximum data privacy.
@@ -118,9 +149,12 @@ Run the unified EquiTally `.html` file inside any modern web browser window (e.g
 
 1. **Define the Destination Market:** Begin typing the name of an exchange in the **Exchange Name** text area. Select from the automated global autocomplete registry (e.g., _Indonesia Stock Exchange (Indonesia)_ or _Nasdaq Stock Market (United States)_).
 2. **Input Asset Tickers:** Input your specific tracking target code into the **Ticker Symbol** field (e.g., `BBRI`, `AAPL`, or `D05`).
-3. **Configure Your Focus Area:** Use the checkbox panel to specify the modules you need. You can use the instant `All` or `None` triggers to modify selections quickly.
-4. **Choose Your Analytics Provider:** Select either `StockAnalysis` or `TradingView` via the radio panel configuration.
-5. **Execute Research Tabs:** Click **Open All Selected Tabs**.
+3. **Choose Your Analytics Provider:** Select one of the three modes in the **Data Source Support** radio panel:
+   - **📦 Package (default)** — Skips the checklist and launches a fixed 8-tab bundle across StockAnalysis and TradingView. Best for comprehensive reconnaissance.
+   - **StockAnalysis** — Enables the checklist; only selected data points are opened. Tickers are normalized to lowercase.
+   - **TradingView** — Enables the checklist; only selected data points are opened. Tickers are normalized to uppercase and exchange codes are remapped (e.g., `SHA` → `SSE`).
+4. **Configure Your Focus Area (Checklist modes only):** If you are in StockAnalysis or TradingView mode, use the checkbox panel to specify the modules you need. You can use the instant `All` or `None` triggers to modify selections quickly. _(This panel is disabled in Package mode.)_
+5. **Execute Research Tabs:** Click **Open All Selected Tabs** — or simply press `Enter` while focused on the Exchange Name, Ticker Symbol, or a radio option.
    - _Note on Security Blocks:_ If the tabs do not open immediately, check your browser's address bar for a "Pop-up Blocked" icon, select "Always allow pop-ups from this source," and retry. Alternatively, use the manually generated reference panel that appears below the controls.
 
 ### Step 3: Operating the Click Counter
@@ -140,6 +174,19 @@ Run the unified EquiTally `.html` file inside any modern web browser window (e.g
 2. (Optional) Adjust the **Reverse order** checkbox if needed.
 3. Click **Copy result**.
 4. Paste into your Sheets spreadsheet — values will fill a row horizontally.
+
+---
+
+## Keyboard Shortcuts
+
+| Shortcut                      | Context                                          | Action                                                          |
+| ----------------------------- | ------------------------------------------------ | --------------------------------------------------------------- |
+| `Enter`                       | Exchange Name field                              | Triggers **Open All Selected Tabs**                             |
+| `Enter`                       | Ticker Symbol field                              | Triggers **Open All Selected Tabs**                             |
+| `Enter`                       | Radio option (Package/StockAnalysis/TradingView) | Triggers **Open All Selected Tabs**                             |
+| `Enter`                       | Focused button                                   | Activates that specific button                                  |
+| `Enter`                       | Inside any textarea                              | Inserts a new line (default browser behaviour)                  |
+| `Ctrl + R` / `Cmd + R` / `F5` | Anywhere                                         | Blocked — refresh is intercepted to protect click-counter state |
 
 ---
 
@@ -261,6 +308,7 @@ You can easily modify the tool to suit your needs by editing the HTML file:
 - **Multipliers** – Adjust the `MULT` object if you need different scaling factors.
 - **Placeholder text** – Update the `placeholder` attributes on the textareas.
 - **Styling** – All CSS is embedded in the `<style>` block; feel free to tweak colors, fonts, or layout.
+- **Package tab delay** – Adjust the `250` millisecond timeout inside `processSearch()` to change the delay between opening bundled Package tabs.
 
 No build step or server is required.
 
@@ -280,13 +328,15 @@ For older browsers, the fallback copy method may work, but BigInt support is ess
 
 ### Troubleshooting
 
-| Issue                           | Possible Cause                    | Solution                                                                                                              |
-| ------------------------------- | --------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Copy button does nothing        | Browser blocks clipboard access   | Use a secure context (HTTPS or localhost) or copy manually from the output textarea.                                  |
-| Values not pasting horizontally | Spreadsheet settings              | Ensure you paste into a single cell and that the tab character is preserved. Some apps may convert tabs to spaces.    |
-| Wrong number of columns         | Input contains unrecognised lines | Check the stats indicator (e.g., "8 converted · 8 skipped"). Unrecognised lines are silently ignored.                 |
-| Reverse order not working       | Checkbox state                    | Make sure the checkbox is checked if you need reversed output.                                                        |
-| Large numbers lose precision    | JavaScript number limitations     | The tool uses BigInt, so precision is maintained. If you see incorrect values, ensure you are using a modern browser. |
+| Issue                               | Possible Cause                     | Solution                                                                                                                         |
+| ----------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Copy button does nothing            | Browser blocks clipboard access    | Use a secure context (HTTPS or localhost) or copy manually from the output textarea.                                             |
+| Values not pasting horizontally     | Spreadsheet settings               | Ensure you paste into a single cell and that the tab character is preserved. Some apps may convert tabs to spaces.               |
+| Wrong number of columns             | Input contains unrecognised lines  | Check the stats indicator (e.g., "8 converted · 8 skipped"). Unrecognised lines are silently ignored.                            |
+| Reverse order not working           | Checkbox state                     | Make sure the checkbox is checked if you need reversed output.                                                                   |
+| Large numbers lose precision        | JavaScript number limitations      | The tool uses BigInt, so precision is maintained. If you see incorrect values, ensure you are using a modern browser.            |
+| `Enter` does not trigger search     | Focused inside a `<textarea>`      | Textareas (ZeroShift, Text Case Converter) intentionally keep native newline behaviour. Move focus to the Exchange/Ticker field. |
+| Package mode launched too many tabs | Fixed bundle of 8 tabs is expected | This is by design. Switch to StockAnalysis or TradingView mode if you prefer granular checklist control.                         |
 
 ---
 
