@@ -396,7 +396,7 @@
       }
 
       /* ============================================================
-         FINANCIAL SHORTHAND CONVERTER
+         ZEROSHIFT CONVERTER
          ============================================================ */
       .legend {
         display: flex;
@@ -730,10 +730,10 @@
       </div>
 
       <!-- ==========================================================
-           SECTION 4 — Financial Shorthand Converter
+           SECTION 4 — ZeroShift Value Scaler
            ========================================================== -->
       <section class="card converter-card">
-        <h2>🔢 Financial Shorthand Converter</h2>
+        <h2>🔢 ZeroShift — Value Scaler</h2>
 
         <div class="legend">
           <span class="chip"><b>K</b> ×1,000</span>
@@ -790,9 +790,9 @@
 
         <p class="foot">
           Output values are separated by tabs (horizontal). Each value will
-          paste into its own cell across a row in your sheet. Format uses commas
-          as thousand separators and no decimal point. Percentage lines are
-          ignored automatically.
+          paste into its own cell across a row in your spreadsheet. Format uses
+          commas as thousand separators and no decimal point. Percentage lines
+          are ignored automatically.
         </p>
       </section>
     </main>
@@ -1010,7 +1010,7 @@
           {
             id: "stats",
             name: "📊 Financial Stats",
-            url: `${base}/financials-statistics-and-ratios/?statistics-period=FQ&selected=price_earnings%2Cprice_book`,
+            url: `${base}/financials-statistics-and-ratios/?statistics-period=FQ`,
           },
           {
             id: "history",
@@ -1020,12 +1020,12 @@
           {
             id: "income",
             name: "📑 Income Statement",
-            url: `${base}/https://www.tradingview.com/symbols/NASDAQ-NVDA/financials-income-statement/?statements-period=FQ&selected=total_revenue%2Cnet_income%2Cbasic_shares_outstanding`,
+            url: `${base}/financials-income-statement/?statements-period=FQ`,
           },
           {
             id: "balance",
             name: "⚖️ Balance Sheet",
-            url: `${base}/financials-balance-sheet/?statements-period=FQ&selected=total_equity`,
+            url: `${base}/financials-balance-sheet/?statements-period=FQ`,
           },
           {
             id: "cash",
@@ -1067,7 +1067,7 @@
           {
             id: "pkg-ratios-tv",
             name: "📊 Ratios — TradingView",
-            url: `${tv}/financials-statistics-and-ratios/?statistics-period=FQ&selected=price_earnings%2Cprice_book`,
+            url: `${tv}/financials-statistics-and-ratios/?statistics-period=FQ`,
           },
           {
             id: "pkg-history-sa",
@@ -1082,7 +1082,7 @@
           {
             id: "pkg-income-tv",
             name: "📑 Income Statement — TradingView",
-            url: `${tv}/https://www.tradingview.com/symbols/NASDAQ-NVDA/financials-income-statement/?statements-period=FQ&selected=total_revenue%2Cnet_income%2Cbasic_shares_outstanding`,
+            url: `${tv}/financials-income-statement/?statements-period=FQ`,
           },
           {
             id: "pkg-balance-sa",
@@ -1092,7 +1092,7 @@
           {
             id: "pkg-balance-tv",
             name: "⚖️ Balance Sheet — TradingView",
-            url: `${tv}/financials-balance-sheet/?statements-period=FQ&selected=total_equity`,
+            url: `${tv}/financials-balance-sheet/?statements-period=FQ`,
           },
         ];
       }
@@ -1284,20 +1284,11 @@
           return;
         }
 
-<<<<<<< HEAD
         // Handle Enter key for search
-=======
-        // Hanya abaikan Enter jika berada di dalam TEXTAREA (untuk membuat baris baru)
-        // Jika berada di INPUT (teks, checkbox, radio), Enter akan memicu pencarian
-        const tag = (e.target.tagName || "").toUpperCase();
-        if (tag === "TEXTAREA") return;
-
-        // Enter di mana saja (termasuk di dalam kolom input) akan memicu pencarian saham
->>>>>>> f80884bea9e0c0e14c5b03126dfb5111b7a3fde7
         if (e.key === "Enter") {
           const tag = (e.target.tagName || "").toUpperCase();
 
-          // Ignore Enter inside textareas (Financial Shorthand Converter, Text Case Converter)
+          // Ignore Enter inside textareas (ZeroShift, Text Case Converter)
           if (tag === "TEXTAREA") return;
 
           // If focused on a button, let the button handle it naturally
@@ -1309,7 +1300,7 @@
           processSearch();
         }
       });
-      
+
       /* ============================================================
          TEXT CASE CONVERTER LOGIC
          ============================================================ */
@@ -1381,7 +1372,7 @@
       }
 
       /* ============================================================
-         FINANCIAL SHORTHAND CONVERTER LOGIC
+         ZEROSHIFT VALUE SCALER LOGIC
          ============================================================ */
       (function () {
         "use strict";
@@ -1563,7 +1554,7 @@
               getToastConfig(
                 ok ? "success" : "error",
                 ok
-                  ? "Copied! Paste it into your sheet row."
+                  ? "Copied! Paste it into your spreadsheet row."
                   : "Copy failed — please select and copy manually.",
               ),
             );
