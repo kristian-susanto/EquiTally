@@ -104,26 +104,26 @@ A lightweight, responsive module that converts shorthand financial values with *
 
 The Stock Multi-Tab Researcher supports three distinct data-source modes, selectable through the **Data Source Support** radio panel. The selected mode determines which URLs are generated, how ticker casing is normalized, and whether the granular checklist is used.
 
-| Mode              | Default | Checklist Used? | Tabs Opened | Description                                                                                                                         |
-| ----------------- | :-----: | :-------------: | :---------: | ----------------------------------------------------------------------------------------------------------------------------------- |
-| **Package**       |   ✅    |       No        |      8      | Fixed multi-source bundle (StockAnalysis + TradingView) launched simultaneously. Ideal for deep-dive reconnaissance.                |
-| **StockAnalysis** |    —    |       Yes       |    1 – 9    | Granular control; only the checklist-selected data points are opened. Tickers are normalized to lowercase.                          |
-| **TradingView**   |    —    |       Yes       |    1 – 9    | Granular control; only the checklist-selected data points are opened. Tickers are normalized to uppercase, exchange codes remapped. |
+| Mode              | Default | Checklist Used? | Tabs Opened | Description                                                                                                                      |
+| ----------------- | :-----: | :-------------: | :---------: | -------------------------------------------------------------------------------------------------------------------------------- |
+| **Package**       |   ✅    |       No        |      8      | Fixed multi-source bundle (StockAnalysis + TradingView) launched simultaneously. Ideal for deep-dive reconnaissance.             |
+| **StockAnalysis** |   —     |       Yes       |  1 – 9      | Granular control; only the checklist-selected data points are opened. Tickers are normalized to lowercase.                       |
+| **TradingView**   |   —     |       Yes       |  1 – 9      | Granular control; only the checklist-selected data points are opened. Tickers are normalized to uppercase, exchange codes remapped. |
 
 ### Package Mode — Fixed 8-Tab Bundle
 
 When **Package** is selected (the default), the data-point checklist is dimmed and disabled, and clicking **Open All Selected Tabs** immediately launches the following eight analytical views:
 
-| #   | Data Point          | Provider      | Purpose                                          |
-| --- | ------------------- | ------------- | ------------------------------------------------ |
-| 1   | 🏢 Overview         | StockAnalysis | Company profile, sector, business summary        |
-| 2   | 📊 Ratios           | StockAnalysis | Quarterly financial ratios and valuation metrics |
-| 3   | 📊 Ratios           | TradingView   | Quarterly statistics and ratios                  |
-| 4   | ⏳ Historical Data  | StockAnalysis | Full historical price and volume records         |
-| 5   | 📑 Income Statement | StockAnalysis | Quarterly income statement                       |
-| 6   | 📑 Income Statement | TradingView   | Quarterly income statement                       |
-| 7   | ⚖️ Balance Sheet    | StockAnalysis | Quarterly balance sheet                          |
-| 8   | ⚖️ Balance Sheet    | TradingView   | Quarterly balance sheet                          |
+| # | Data Point            | Provider       | Purpose                                              |
+| - | --------------------- | -------------- | ---------------------------------------------------- |
+| 1 | 🏢 Overview           | StockAnalysis  | Company profile, sector, business summary            |
+| 2 | 📊 Ratios             | StockAnalysis  | Quarterly financial ratios and valuation metrics      |
+| 3 | 📊 Ratios             | TradingView    | Quarterly statistics and ratios                       |
+| 4 | ⏳ Historical Data     | StockAnalysis  | Full historical price and volume records              |
+| 5 | 📑 Income Statement   | StockAnalysis  | Quarterly income statement                            |
+| 6 | 📑 Income Statement   | TradingView    | Quarterly income statement                            |
+| 7 | ⚖️ Balance Sheet      | StockAnalysis  | Quarterly balance sheet                               |
+| 8 | ⚖️ Balance Sheet      | TradingView    | Quarterly balance sheet                               |
 
 Package mode is intentionally unconfigurable — it is a fixed reconnaissance bundle designed so that switching between providers is not necessary when you simply want comprehensive coverage of a ticker.
 
@@ -153,7 +153,7 @@ Run the unified EquiTally `.html` file inside any modern web browser window (e.g
    - **📦 Package (default)** — Skips the checklist and launches a fixed 8-tab bundle across StockAnalysis and TradingView. Best for comprehensive reconnaissance.
    - **StockAnalysis** — Enables the checklist; only selected data points are opened. Tickers are normalized to lowercase.
    - **TradingView** — Enables the checklist; only selected data points are opened. Tickers are normalized to uppercase and exchange codes are remapped (e.g., `SHA` → `SSE`).
-4. **Configure Your Focus Area (Checklist modes only):** If you are in StockAnalysis or TradingView mode, use the checkbox panel to specify the modules you need. You can use the instant `All` or `None` triggers to modify selections quickly. _(This panel is disabled in Package mode.)_
+4. **Configure Your Focus Area (Checklist modes only):** If you are in StockAnalysis or TradingView mode, use the checkbox panel to specify the modules you need. You can use the instant `All` or `None` triggers to modify selections quickly. *(This panel is disabled in Package mode.)*
 5. **Execute Research Tabs:** Click **Open All Selected Tabs** — or simply press `Enter` while focused on the Exchange Name, Ticker Symbol, or a radio option.
    - _Note on Security Blocks:_ If the tabs do not open immediately, check your browser's address bar for a "Pop-up Blocked" icon, select "Always allow pop-ups from this source," and retry. Alternatively, use the manually generated reference panel that appears below the controls.
 
@@ -179,14 +179,14 @@ Run the unified EquiTally `.html` file inside any modern web browser window (e.g
 
 ## Keyboard Shortcuts
 
-| Shortcut                      | Context                                          | Action                                                          |
-| ----------------------------- | ------------------------------------------------ | --------------------------------------------------------------- |
-| `Enter`                       | Exchange Name field                              | Triggers **Open All Selected Tabs**                             |
-| `Enter`                       | Ticker Symbol field                              | Triggers **Open All Selected Tabs**                             |
-| `Enter`                       | Radio option (Package/StockAnalysis/TradingView) | Triggers **Open All Selected Tabs**                             |
-| `Enter`                       | Focused button                                   | Activates that specific button                                  |
-| `Enter`                       | Inside any textarea                              | Inserts a new line (default browser behaviour)                  |
-| `Ctrl + R` / `Cmd + R` / `F5` | Anywhere                                         | Blocked — refresh is intercepted to protect click-counter state |
+| Shortcut                                | Context                                | Action                                                                                  |
+| --------------------------------------- | -------------------------------------- | --------------------------------------------------------------------------------------- |
+| `Enter`                                 | Exchange Name field                    | Triggers **Open All Selected Tabs**                                                     |
+| `Enter`                                 | Ticker Symbol field                    | Triggers **Open All Selected Tabs**                                                     |
+| `Enter`                                 | Radio option (Package/StockAnalysis/TradingView) | Triggers **Open All Selected Tabs**                                          |
+| `Enter`                                 | Focused button                         | Activates that specific button                                                          |
+| `Enter`                                 | Inside any textarea                    | Inserts a new line (default browser behaviour)                                          |
+| `Ctrl + R` / `Cmd + R` / `F5`           | Anywhere                               | Blocked — refresh is intercepted to protect click-counter state                          |
 
 ---
 
@@ -234,7 +234,7 @@ The Financial Shorthand Converter is a lightweight, responsive web tool that con
 
 **Example input:**
 
-```text
+~~~text
 9.26 T
 −2.05%
 9.70 T
@@ -251,7 +251,7 @@ The Financial Shorthand Converter is a lightweight, responsive web tool that con
 −2.02%
 11.64 T
 +17.60%
-```
+~~~
 
 ---
 
@@ -264,9 +264,9 @@ The Financial Shorthand Converter is a lightweight, responsive web tool that con
 
 **Example output (for the input above):**
 
-```text
+~~~text
 9,260,000,000,000	9,700,000,000,000	10,330,000,000,000	9,900,000,000,000	10,550,000,000,000	10,060,000,000,000	10,120,000,000,000	11,640,000,000,000
-```
+~~~
 
 > **Note:** If the **Reverse order** checkbox is checked, the output sequence is reversed (e.g., `11,640,000,000,000` first).
 
@@ -328,15 +328,15 @@ For older browsers, the fallback copy method may work, but BigInt support is ess
 
 ### Troubleshooting
 
-| Issue                               | Possible Cause                     | Solution                                                                                                                         |
-| ----------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Copy button does nothing            | Browser blocks clipboard access    | Use a secure context (HTTPS or localhost) or copy manually from the output textarea.                                             |
-| Values not pasting horizontally     | Spreadsheet settings               | Ensure you paste into a single cell and that the tab character is preserved. Some apps may convert tabs to spaces.               |
-| Wrong number of columns             | Input contains unrecognised lines  | Check the stats indicator (e.g., "8 converted · 8 skipped"). Unrecognised lines are silently ignored.                            |
-| Reverse order not working           | Checkbox state                     | Make sure the checkbox is checked if you need reversed output.                                                                   |
-| Large numbers lose precision        | JavaScript number limitations      | The tool uses BigInt, so precision is maintained. If you see incorrect values, ensure you are using a modern browser.            |
-| `Enter` does not trigger search     | Focused inside a `<textarea>`      | Textareas (ZeroShift, Text Case Converter) intentionally keep native newline behaviour. Move focus to the Exchange/Ticker field. |
-| Package mode launched too many tabs | Fixed bundle of 8 tabs is expected | This is by design. Switch to StockAnalysis or TradingView mode if you prefer granular checklist control.                         |
+| Issue                           | Possible Cause                                  | Solution                                                                                                                       |
+| ------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Copy button does nothing        | Browser blocks clipboard access                 | Use a secure context (HTTPS or localhost) or copy manually from the output textarea.                                           |
+| Values not pasting horizontally | Spreadsheet settings                            | Ensure you paste into a single cell and that the tab character is preserved. Some apps may convert tabs to spaces.             |
+| Wrong number of columns         | Input contains unrecognised lines               | Check the stats indicator (e.g., "8 converted · 8 skipped"). Unrecognised lines are silently ignored.                          |
+| Reverse order not working       | Checkbox state                                  | Make sure the checkbox is checked if you need reversed output.                                                                 |
+| Large numbers lose precision    | JavaScript number limitations                   | The tool uses BigInt, so precision is maintained. If you see incorrect values, ensure you are using a modern browser.           |
+| `Enter` does not trigger search | Focused inside a `<textarea>`                   | Textareas (ZeroShift, Text Case Converter) intentionally keep native newline behaviour. Move focus to the Exchange/Ticker field. |
+| Package mode launched too many tabs | Fixed bundle of 8 tabs is expected          | This is by design. Switch to StockAnalysis or TradingView mode if you prefer granular checklist control.                        |
 
 ---
 
