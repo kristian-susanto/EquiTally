@@ -413,6 +413,17 @@ HTML_PAGE = r'''<!doctype html>
         checkboxGrid.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.checked = selectAll));
       }
 
+      function getPeriodLabel(dateStr) {
+        const dt = new Date(dateStr + "T00:00:00");
+        const y = dt.getFullYear();
+        const m = dt.getMonth() + 1;
+        if (m === 3) return `1Q${y}`;
+        if (m === 6) return `1H${y}`;
+        if (m === 9) return `9M${y}`;
+        if (m === 12) return `FY${y}`;
+        return `${m}M${y}`; // fallback bila bukan quarter-end standar
+      }
+
       function processQuarterlyData(timestamps, closes) {
         let quarterData = [];
         let currentQuarter = null, lastClose = null, prevDate = null;
@@ -425,13 +436,17 @@ HTML_PAGE = r'''<!doctype html>
           const qKey = `${year}-Q${quarter}`;
           const dateStr = date.toISOString().split("T")[0];
           if (currentQuarter !== qKey) {
-            if (currentQuarter !== null && lastClose !== null) quarterData.push({ date: prevDate, close: lastClose });
+            if (currentQuarter !== null && lastClose !== null) {
+              quarterData.push({ date: prevDate, close: lastClose, period: getPeriodLabel(prevDate) });
+            }
             currentQuarter = qKey;
           }
           lastClose = closes[i];
           prevDate = dateStr;
         }
-        if (currentQuarter !== null && lastClose !== null) quarterData.push({ date: prevDate, close: lastClose });
+        if (currentQuarter !== null && lastClose !== null) {
+          quarterData.push({ date: prevDate, close: lastClose, period: getPeriodLabel(prevDate) });
+        }
         quarterData.sort((a, b) => new Date(b.date) - new Date(a.date));
         return quarterData;
       }
@@ -501,23 +516,35 @@ HTML_PAGE = r'''<!doctype html>
               .header p{margin:6px 0 0; font-size:clamp(.74rem,2.4vw,.9rem); opacity:.88}
               .table-wrap{width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
               table{border-collapse:collapse; width:100%; min-width:max-content}
-              
-              /* Padding ditambah agar cell lebih lega */
-              th,td{padding:14px 22px; border-bottom:1px solid var(--border); white-space:nowrap;
-                    font-variant-numeric:tabular-nums}
-                    
+
+              th,td{
+                padding:14px 22px; border-bottom:1px solid var(--border); white-space:nowrap;
+                font-variant-numeric:tabular-nums;
+              }
+
               thead th{
-                background:var(--stripe); color:var(--muted); font-size:.76rem; font-weight:700;
-                letter-spacing:.4px; text-transform:uppercase; text-align:center;
+                background:var(--stripe); color:var(--muted);
+                font-size:.8rem; font-weight:700; letter-spacing:.4px;
+                text-transform:uppercase; text-align:center;
                 position:sticky; top:0; z-index:3;
               }
-              
-              /* MEMBUAT QUARTER-END STICKY DI KIRI ATAS */
-              thead th:first-child {
-                left: 0;
-                z-index: 4; /* Harus lebih tinggi dari header tanggal dan Close Price */
+
+              thead th:first-child{
+                left:0; z-index:4;
+                text-align:left; padding-left:22px;
+                font-size:.8rem; font-weight:700;
+                text-transform:uppercase; color:var(--muted); letter-spacing:.4px;
               }
-              
+
+              thead th.period-value{
+                text-align:center;
+                color:var(--text);
+                font-size:.9rem;
+                font-weight:600;
+                letter-spacing:0;
+                text-transform:none;
+              }
+
               tbody th{
                 position:sticky; left:0; z-index:2; background:var(--stripe); text-align:left;
                 font-size:.8rem; font-weight:700; color:var(--muted);
@@ -525,18 +552,18 @@ HTML_PAGE = r'''<!doctype html>
                 border-right:1px solid var(--border);
               }
               tbody td{text-align:center; font-size:.9rem; font-weight:600; color:var(--text)}
+
               tbody tr:hover td{background:var(--hover)}
               tbody tr:last-child th, tbody tr:last-child td{border-bottom:none}
               .foot{padding:14px 18px; font-size:.75rem; color:var(--muted); text-align:center; line-height:1.6}
-              
-              /* Penyesuaian padding untuk layar kecil */
+
               @media (max-width:600px){
                 body{padding:12px 8px 30px}
                 .header{padding:18px 12px}
                 th,td{padding:10px 14px}
-                thead th{font-size:.68rem}
-                tbody th{font-size:.72rem}
-                tbody td{font-size:.82rem}
+                thead th, thead th:first-child, tbody th{ font-size:.72rem; }
+                thead th.period-value, tbody td{ font-size:.82rem; }
+                thead th:first-child{padding-left:14px}
                 .foot{font-size:.7rem; padding:12px}
               }
             </style>
@@ -551,11 +578,15 @@ HTML_PAGE = r'''<!doctype html>
                   <table>
                     <thead>
                       <tr>
-                        <th scope="col">Quarter-End</th>
-                        ${quarterData.map((d) => `<th scope="col">${d.date}</th>`).join("")}
+                        <th scope="col">Period</th>
+                        ${quarterData.map((d) => `<th scope="col" class="period-value">${d.period}</th>`).join("")}
                       </tr>
                     </thead>
                     <tbody>
+                      <tr>
+                        <th scope="row">Quarter-End</th>
+                        ${quarterData.map((d) => `<td>${d.date}</td>`).join("")}
+                      </tr>
                       <tr>
                         <th scope="row">Close Price</th>
                         ${quarterData.map((d) => `<td>${fmtClose(d.close)}</td>`).join("")}

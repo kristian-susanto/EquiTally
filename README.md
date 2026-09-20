@@ -66,7 +66,7 @@ Designed for investors, traders, and financial analysts to eliminate repetitive 
 - **Granular Data Point Filtering:** Choose precisely which dimensions to investigate (e.g., Latest News, Financial Ratios, Historical Trends, Balance Sheets, Income Statements, Cash Flow Metrics, or Dividend Trackers).
 - **Triple Data Source Support:** Switch the structural parsing logic between **Package**, **StockAnalysis**, or **TradingView** environments depending on your data pipeline preferences.
 - **Package Mode (Default):** A one-click bundled workflow that ignores the granular checklist and launches a fixed set of **6 analytical tabs** in a single action — combining StockAnalysis, TradingView, and a locally rendered historical data view.
-- **Local Historical Data View:** The ⏳ **Historical Data** tab is rendered on the fly by the Flask backend. It queries Yahoo Finance quarterly closes (10 years) and displays them in a **transposed, responsive table** — dates across the top row, close prices in a single row underneath — with a sticky first column for easy horizontal scrolling.
+- **Local Historical Data View:** The ⏳ **Historical Data** tab is rendered on the fly by the Flask backend. It queries Yahoo Finance quarterly closes (10 years) and displays them in a **transposed, responsive table** with three rows: a **Period** header row (`1Q`, `1H`, `9M`, `FY` labels), a **Quarter-End** row with the actual date, and a **Close Price** row. All three value rows are aligned to their respective periods, with a sticky first column for easy horizontal scrolling.
 - **Context-Aware Keyboard Shortcut:** Pressing `Enter` inside the Exchange Name field, Ticker Symbol field, or any radio option immediately triggers the research pipeline — no need to move your mouse to the button.
 - **Fail-Safe Manual Backup Registry:** Embedded link presentation tier ensures that if a modern browser blocks multi-popups, backup clickable links render seamlessly to bypass security restrictions.
 
@@ -84,10 +84,10 @@ A professional-grade typographical formatting workstation tailored for developer
 
 - **Multi-State Transformation Matrix:**
   - `UPPERCASE`: Standardizes code variables, tickers, or headings into all capital letters.
-  - `lowercase`: Converts string strings to lowercase formats for normalized database ingestions.
+  - `lowercase`: Converts strings to lowercase formats for normalized database ingestions.
   - `Capitalize Word`: Formats strings into title-case blocks by auto-capitalizing every segmented word.
   - `Sentence case`: Corrects running prose by adjusting only the initial character of text sequences.
-  - `tOGGLE cASE`: Inverts the casing state of every single character arrays instantly.
+  - `tOGGLE cASE`: Inverts the casing state of every single character array instantly.
 - **One-Click Buffer Interface:** Directly interacts with the system clipboard APIs for frictionless, one-tap copy operations.
 - **Protected Erasure Actions:** Guardrails data entries against accidental losses with integrated SweetAlert validation handlers.
 
@@ -139,10 +139,21 @@ When the ⏳ **Historical Data** target is executed (only available inside Packa
 1. Resolves the ticker to a Yahoo Finance symbol using the exchange suffix map (e.g., `IDX → .JK`, `HKG → .HK`, `TYO → .T`).
 2. Calls the Flask `/proxy?symbol=…&range=10y&interval=1d` endpoint, which forwards the request to Yahoo Finance with a desktop User-Agent header.
 3. Parses the returned daily closes and reduces them to **quarter-end closing prices** (one data point per calendar quarter).
-4. Renders a **transposed, responsive table**:
-   - Dates run across the top header row.
-   - A single **Close Price** row sits beneath, with values aligned to their respective dates.
-   - The first column (`Quarter-End` / `Close Price`) is **sticky** so it remains visible while scrolling horizontally.
+4. Renders a **transposed, responsive table** with three stacked rows:
+
+   | **Period**      | 9M2026     | 1H2026     | 1Q2026     | FY2025     | 9M2025     | 1H2025     | 1Q2025     |
+   | --------------- | ---------- | ---------- | ---------- | ---------- | ---------- | ---------- | ---------- |
+   | **Quarter-End** | 2026-09-18 | 2026-06-30 | 2026-03-31 | 2025-12-30 | 2025-09-30 | 2025-06-30 | 2025-03-27 |
+   | **Close Price** | 6,300.00   | 5,550.00   | 6,450.00   | 8,075.00   | 7,625.00   | 8,675.00   | 8,500.00   |
+   - **Row 1 — Period (header):** Compact labels derived from the quarter-end month:
+     - March → `1Q<year>` (e.g., `1Q2026`)
+     - June → `1H<year>` (e.g., `1H2026`)
+     - September → `9M<year>` (e.g., `9M2026`)
+     - December → `FY<year>` (e.g., `FY2025`)
+   - **Row 2 — Quarter-End:** Actual trading date of the quarter-end close.
+   - **Row 3 — Close Price:** Quarter-end closing price in the listing currency.
+   - The leftmost **Period / Quarter-End / Close Price** label column is **sticky**, so it stays visible while scrolling horizontally.
+   - The **Period** label uses the same font size and weight as **Quarter-End** and **Close Price** so all three value rows look visually consistent.
    - The table uses a 💼 favicon, matches the global light/dark theme via `prefers-color-scheme`, and adapts its padding/typography on mobile screens.
 
 If a ticker is invalid or Yahoo Finance returns no data, the tab renders a friendly error card instead of the table.
@@ -432,6 +443,7 @@ You can easily modify the tool to suit your needs by editing the source files:
 - **Multipliers** – Adjust the `MULT` object if you need different scaling factors.
 - **Placeholder text** – Update the `placeholder` attributes on the textareas.
 - **Styling** – All CSS is embedded in the `<style>` block inside `HTML_PAGE`; feel free to tweak colors, fonts, or layout.
+- **Historical table layout** – The transposed Historical Data table (Period / Quarter-End / Close Price) is generated inside `openHistoryTab()` in `app.py`. Adjust the period-label logic in `getPeriodLabel()` or the row order in the HTML template to change its structure.
 - **Package tab delay** – Adjust the `350` millisecond timeout inside `processSearch()` to change the delay between opening bundled Package tabs.
 - **Proxy timeout** – The `/proxy` route uses a 15-second timeout to Yahoo Finance; adjust as needed for slower networks.
 
@@ -454,18 +466,19 @@ For older browsers, the fallback copy method may work, but BigInt support is ess
 
 ### Troubleshooting
 
-| Issue                                          | Possible Cause                               | Solution                                                                                                                         |
-| ---------------------------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Copy button does nothing                       | Browser blocks clipboard access              | Use a secure context (HTTPS or localhost) or copy manually from the output textarea.                                             |
-| Values not pasting horizontally                | Spreadsheet settings                         | Ensure you paste into a single cell and that the tab character is preserved. Some apps may convert tabs to spaces.               |
-| Wrong number of columns                        | Input contains unrecognised lines            | Check the stats indicator (e.g., "8 converted · 8 skipped"). Unrecognised lines are silently ignored.                            |
-| Reverse order not working                      | Checkbox state                               | Make sure the checkbox is checked if you need reversed output.                                                                   |
-| Large numbers lose precision                   | JavaScript number limitations                | The tool uses BigInt, so precision is maintained. If you see incorrect values, ensure you are using a modern browser.            |
-| `Enter` does not trigger search                | Focused inside a `<textarea>`                | Textareas (ZeroShift, Text Case Converter) intentionally keep native newline behaviour. Move focus to the Exchange/Ticker field. |
-| Package mode launched too few tabs             | Fixed bundle of 6 tabs is expected           | This is by design. Switch to StockAnalysis or TradingView mode if you prefer granular checklist control.                         |
-| Historical Data tab shows error                | Flask `/proxy` unreachable or ticker invalid | Ensure `python app.py` is running and the page is loaded from `http://localhost:5000`. Verify the ticker and exchange code.      |
-| Historical Data favicon still shows old emoji  | Browser favicon cache                        | Perform a hard refresh (`Ctrl + F5` / `Cmd + Shift + R`) or open the tab in an incognito window.                                 |
-| Historical table dates not aligned with prices | Horizontal scrolling is expected             | The table is intentionally transposed. The `Quarter-End` column stays sticky on the left while you scroll to compare dates.      |
+| Issue                                          | Possible Cause                               | Solution                                                                                                                                                                   |
+| ---------------------------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Copy button does nothing                       | Browser blocks clipboard access              | Use a secure context (HTTPS or localhost) or copy manually from the output textarea.                                                                                       |
+| Values not pasting horizontally                | Spreadsheet settings                         | Ensure you paste into a single cell and that the tab character is preserved. Some apps may convert tabs to spaces.                                                         |
+| Wrong number of columns                        | Input contains unrecognised lines            | Check the stats indicator (e.g., "8 converted · 8 skipped"). Unrecognised lines are silently ignored.                                                                      |
+| Reverse order not working                      | Checkbox state                               | Make sure the checkbox is checked if you need reversed output.                                                                                                             |
+| Large numbers lose precision                   | JavaScript number limitations                | The tool uses BigInt, so precision is maintained. If you see incorrect values, ensure you are using a modern browser.                                                      |
+| `Enter` does not trigger search                | Focused inside a `<textarea>`                | Textareas (ZeroShift, Text Case Converter) intentionally keep native newline behaviour. Move focus to the Exchange/Ticker field.                                           |
+| Package mode launched too few tabs             | Fixed bundle of 6 tabs is expected           | This is by design. Switch to StockAnalysis or TradingView mode if you prefer granular checklist control.                                                                   |
+| Historical Data tab shows error                | Flask `/proxy` unreachable or ticker invalid | Ensure `python app.py` is running and the page is loaded from `http://localhost:5000`. Verify the ticker and exchange code.                                                |
+| Historical Data favicon still shows old emoji  | Browser favicon cache                        | Perform a hard refresh (`Ctrl + F5` / `Cmd + Shift + R`) or open the tab in an incognito window.                                                                           |
+| Historical table dates not aligned with prices | Horizontal scrolling is expected             | The table is intentionally transposed. The leftmost label column (`Period` / `Quarter-End` / `Close Price`) stays sticky on the left while you scroll to compare quarters. |
+| Period row font looks inconsistent             | Browser cache                                | Perform a hard refresh (`Ctrl + F5` / `Cmd + Shift + R`). The `Period` label uses the same size as `Quarter-End` and `Close Price` by design.                              |
 
 ---
 
@@ -473,8 +486,8 @@ For older browsers, the fallback copy method may work, but BigInt support is ess
 
 - **Flask (Python) Backend:** `app.py` serves the single-file frontend via `render_template_string` and exposes a `/proxy` endpoint that forwards requests to Yahoo Finance for historical price data. This is the only server-side component.
 - **HTML5 Elements:** Structured content layout separating input contexts from interactive control modules.
-- **CSS3 Variables & Responsive Design:** Centralized color variables handle real-time theme swapping, while a mobile-first layout engine guarantees responsive adaptations — including the transposed, horizontally scrollable Historical Data table.
-- **Vanilla JavaScript (ES6+):** Manages local caching layers, handles typography transformations, monitors tracking variables, maps data parameters into targeted financial URL strings, and renders the local Historical Data tab.
+- **CSS3 Variables & Responsive Design:** Centralized color variables handle real-time theme swapping, while a mobile-first layout engine guarantees responsive adaptations — including the transposed, horizontally scrollable Historical Data table (Period / Quarter-End / Close Price rows).
+- **Vanilla JavaScript (ES6+):** Manages local caching layers, handles typography transformations, monitors tracking variables, maps data parameters into targeted financial URL strings, and renders the local Historical Data tab (including the period-label derivation logic).
 - **SweetAlert2 Library Integration:** Leveraged for modern, non-blocking toast popups and validation dialogs that automatically match the selected system theme.
 - **BigInt Arithmetic:** Used by EquiTally's Financial Shorthand Converter for exact financial suffix conversion without floating-point precision loss.
 - **Clipboard API Integration:** Enables one-click copy operations across EquiTally, with fallback support where needed.
