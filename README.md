@@ -15,6 +15,12 @@ This README merges all references into one unified guide for professional workfl
   - [3. Text Case Converter](#3-text-case-converter)
   - [4. Financial Shorthand Converter](#4-financial-shorthand-converter)
 - [Global Core Layout Specifications](#global-core-layout-specifications)
+- [Prerequisites & Environment Setup](#prerequisites--environment-setup)
+  - [Prerequisites](#prerequisites)
+  - [Step 1: Create a Virtual Environment](#step-1-create-a-virtual-environment)
+  - [Step 2: Activate the Virtual Environment](#step-2-activate-the-virtual-environment)
+  - [Step 3: Install Dependencies](#step-3-install-dependencies)
+  - [Step 4: Run the Application](#step-4-run-the-application)
 - [How to Use EquiTally](#how-to-use-equitally)
   - [Step 1: Initialize the Application](#step-1-initialize-the-application)
   - [Step 2: Utilizing the Stock Researcher](#step-2-utilizing-the-stock-researcher)
@@ -150,6 +156,98 @@ If a ticker is invalid or Yahoo Finance returns no data, the tab renders a frien
 - **Persistent Preferences:** Automatically mirrors user theme states using modern browser `localStorage`, ensuring your preferred interface style persists across subsequent sessions.
 - **Fully Responsive Matrix UI:** Built from the ground up using clean CSS grids and fluid flexbox structures. Seamlessly transforms between compact mobile screens, tablets, and extensive multi-monitor setups.
 - **Optimized Typography & Footprint:** Employs a crisp font stack hierarchy and inline SVG assets to ensure instant paint times and high layout performance.
+
+---
+
+## Prerequisites & Environment Setup
+
+Before running EquiTally, ensure you have the following installed on your machine.
+
+### Prerequisites
+
+- **Python 3.8 or higher** — [Download Python](https://www.python.org/downloads/)
+- **pip** (Python package installer, bundled with modern Python installations)
+
+Verify your installation by running:
+
+```bash
+python --version
+pip --version
+```
+
+### Step 1: Create a Virtual Environment
+
+It is strongly recommended to isolate your project dependencies using a virtual environment. Navigate to the project folder containing `app.py`, then run:
+
+**Windows:**
+
+```bash
+python -m venv venv
+```
+
+**macOS / Linux:**
+
+```bash
+python3 -m venv venv
+```
+
+### Step 2: Activate the Virtual Environment
+
+**Windows (Command Prompt):**
+
+```bash
+venv\Scripts\activate
+```
+
+**Windows (PowerShell):**
+
+```powershell
+.\venv\Scripts\Activate.ps1
+```
+
+**macOS / Linux:**
+
+```bash
+source venv/bin/activate
+```
+
+Once activated, your terminal prompt should be prefixed with `(venv)`.
+
+### Step 3: Install Dependencies
+
+EquiTally requires **Flask** and **requests**. Install them with:
+
+```bash
+pip install flask requests
+```
+
+> **Tip:** You can also create a `requirements.txt` file containing:
+>
+> ```
+> flask
+> requests
+> ```
+>
+> Then install with `pip install -r requirements.txt`.
+
+### Step 4: Run the Application
+
+Start the Flask development server:
+
+```bash
+python app.py
+```
+
+You should see the following banner in your terminal:
+
+```
+=======================================================
+  EquiTally Server Running
+  Open:  http://localhost:5000
+=======================================================
+```
+
+Open your browser and navigate to `http://localhost:5000` to access the application.
 
 ---
 

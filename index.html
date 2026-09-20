@@ -546,7 +546,7 @@
 
         <div class="input-group">
           <label for="ticker_symbol">Ticker Symbol</label>
-          <input type="text" id="ticker_symbol" placeholder="Example: 601398" />
+          <input type="text" id="ticker_symbol" placeholder="Example: 0700" />
         </div>
 
         <div class="input-group">
@@ -624,18 +624,11 @@
             >
           </div>
           <p class="source-note" id="packageNote">
-            <b>Package mode</b> ignores the data-point checklist and opens a
-            fixed bundle of <b>8 tabs</b> at once:
-            <br />
-            • 🏢 Overview — StockAnalysis
-            <br />
-            • 📊 Ratios — StockAnalysis &amp; TradingView
-            <br />
-            • ⏳ Historical Data — StockAnalysis
-            <br />
-            • 📑 Income Statement — StockAnalysis &amp; TradingView
-            <br />
-            • ⚖️ Balance Sheet — StockAnalysis &amp; TradingView
+            <b>Package mode</b> opens a fixed bundle of <b>6 tabs</b>: <br />•
+            🏢 Overview — StockAnalysis &amp; TradingView <br />• 📊 Ratios —
+            TradingView <br />• ⏳ Historical Data — StockAnalysis <br />• 📑
+            Income Statement — TradingView <br />• ⚖️ Balance Sheet —
+            TradingView
           </p>
         </div>
 
@@ -1045,14 +1038,10 @@
         ];
       }
 
-      /* ---------- Package bundle: fixed 8 tabs, no checklist needed ---------- */
+      /* ---------- Package bundle: fixed 6 tabs, no checklist needed ---------- */
       function buildPackageTargets(exchangeCode, ticker) {
         const sa = saBaseUrl(exchangeCode, ticker);
-        const tv = `https://www.tradingview.com/symbols/${tvSymbol(
-          exchangeCode,
-          ticker,
-        )}`;
-
+        const tv = `https://www.tradingview.com/symbols/${tvSymbol(exchangeCode, ticker)}`;
         return [
           {
             id: "pkg-overview-sa",
@@ -1060,9 +1049,9 @@
             url: `${sa}/company`,
           },
           {
-            id: "pkg-ratios-sa",
-            name: "📊 Ratios — StockAnalysis",
-            url: `${sa}/financials/ratios/?p=quarterly`,
+            id: "pkg-overview-tv",
+            name: "🏢 Overview — TradingView",
+            url: `${tv}/`,
           },
           {
             id: "pkg-ratios-tv",
@@ -1075,19 +1064,9 @@
             url: `${sa}/history/`,
           },
           {
-            id: "pkg-income-sa",
-            name: "📑 Income Statement — StockAnalysis",
-            url: `${sa}/financials/income-statement/?p=quarterly`,
-          },
-          {
             id: "pkg-income-tv",
             name: "📑 Income Statement — TradingView",
             url: `${tv}/financials-income-statement/?statements-period=FQ&selected=total_revenue%2Cnet_income%2Cbasic_shares_outstanding`,
-          },
-          {
-            id: "pkg-balance-sa",
-            name: "⚖️ Balance Sheet — StockAnalysis",
-            url: `${sa}/financials/balance-sheet/?p=quarterly`,
           },
           {
             id: "pkg-balance-tv",

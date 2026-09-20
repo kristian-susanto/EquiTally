@@ -139,7 +139,7 @@ HTML_PAGE = r'''<!doctype html>
         </div>
         <div class="input-group">
           <label for="ticker_symbol">Ticker Symbol</label>
-          <input type="text" id="ticker_symbol" placeholder="Example: 601398" />
+          <input type="text" id="ticker_symbol" placeholder="Example: 0700" />
         </div>
         <div class="input-group">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
@@ -486,65 +486,65 @@ HTML_PAGE = r'''<!doctype html>
                   --border:#334155; --primary:#3b82f6; --stripe:#243449; --hover:#2d3f5c;
                 }
               }
-                *{box-sizing:border-box}
-                body{
-                  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-                  margin:0; padding:22px 14px 44px; background:var(--bg); color:var(--text);
-                  -webkit-text-size-adjust:100%;
-                }
-                .container{
-                  max-width:1100px; margin:0 auto; background:var(--card); border-radius:14px;
-                  box-shadow:0 10px 25px -5px rgba(0,0,0,.15); overflow:hidden;
-                }
-                .header{background:var(--primary); color:#fff; padding:22px 18px; text-align:center}
-                .header h1{margin:0; font-size:clamp(1.05rem,3.4vw,1.5rem); font-weight:800; word-break:break-word}
-                .header p{margin:6px 0 0; font-size:clamp(.74rem,2.4vw,.9rem); opacity:.88}
-                .table-wrap{width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
-                table{border-collapse:collapse; width:100%; min-width:max-content}
-                
-                /* Padding ditambah agar cell lebih lega */
-                th,td{padding:14px 22px; border-bottom:1px solid var(--border); white-space:nowrap;
-                      font-variant-numeric:tabular-nums}
-                      
-                thead th{
-                  background:var(--stripe); color:var(--muted); font-size:.76rem; font-weight:700;
-                  letter-spacing:.4px; text-transform:uppercase; text-align:center;
-                  position:sticky; top:0; z-index:3;
-                }
-                
-                /* MEMBUAT QUARTER-END STICKY DI KIRI ATAS */
-                thead th:first-child {
-                  left: 0;
-                  z-index: 4; /* Harus lebih tinggi dari header tanggal dan Close Price */
-                }
-                
-                tbody th{
-                  position:sticky; left:0; z-index:2; background:var(--stripe); text-align:left;
-                  font-size:.8rem; font-weight:700; color:var(--muted);
-                  text-transform:uppercase; letter-spacing:.4px;
-                  border-right:1px solid var(--border);
-                }
-                tbody td{text-align:center; font-size:.9rem; font-weight:600; color:var(--text)}
-                tbody tr:hover td{background:var(--hover)}
-                tbody tr:last-child th, tbody tr:last-child td{border-bottom:none}
-                .foot{padding:14px 18px; font-size:.75rem; color:var(--muted); text-align:center; line-height:1.6}
-                
-                /* Penyesuaian padding untuk layar kecil */
-                @media (max-width:600px){
-                  body{padding:12px 8px 30px}
-                  .header{padding:18px 12px}
-                  th,td{padding:10px 14px}
-                  thead th{font-size:.68rem}
-                  tbody th{font-size:.72rem}
-                  tbody td{font-size:.82rem}
-                  .foot{font-size:.7rem; padding:12px}
-                }
+              *{box-sizing:border-box}
+              body{
+                font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+                margin:0; padding:22px 14px 44px; background:var(--bg); color:var(--text);
+                -webkit-text-size-adjust:100%;
+              }
+              .container{
+                max-width:1100px; margin:0 auto; background:var(--card); border-radius:14px;
+                box-shadow:0 10px 25px -5px rgba(0,0,0,.15); overflow:hidden;
+              }
+              .header{background:var(--primary); color:#fff; padding:22px 18px; text-align:center}
+              .header h1{margin:0; font-size:clamp(1.05rem,3.4vw,1.5rem); font-weight:800; word-break:break-word}
+              .header p{margin:6px 0 0; font-size:clamp(.74rem,2.4vw,.9rem); opacity:.88}
+              .table-wrap{width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+              table{border-collapse:collapse; width:100%; min-width:max-content}
+              
+              /* Padding ditambah agar cell lebih lega */
+              th,td{padding:14px 22px; border-bottom:1px solid var(--border); white-space:nowrap;
+                    font-variant-numeric:tabular-nums}
+                    
+              thead th{
+                background:var(--stripe); color:var(--muted); font-size:.76rem; font-weight:700;
+                letter-spacing:.4px; text-transform:uppercase; text-align:center;
+                position:sticky; top:0; z-index:3;
+              }
+              
+              /* MEMBUAT QUARTER-END STICKY DI KIRI ATAS */
+              thead th:first-child {
+                left: 0;
+                z-index: 4; /* Harus lebih tinggi dari header tanggal dan Close Price */
+              }
+              
+              tbody th{
+                position:sticky; left:0; z-index:2; background:var(--stripe); text-align:left;
+                font-size:.8rem; font-weight:700; color:var(--muted);
+                text-transform:uppercase; letter-spacing:.4px;
+                border-right:1px solid var(--border);
+              }
+              tbody td{text-align:center; font-size:.9rem; font-weight:600; color:var(--text)}
+              tbody tr:hover td{background:var(--hover)}
+              tbody tr:last-child th, tbody tr:last-child td{border-bottom:none}
+              .foot{padding:14px 18px; font-size:.75rem; color:var(--muted); text-align:center; line-height:1.6}
+              
+              /* Penyesuaian padding untuk layar kecil */
+              @media (max-width:600px){
+                body{padding:12px 8px 30px}
+                .header{padding:18px 12px}
+                th,td{padding:10px 14px}
+                thead th{font-size:.68rem}
+                tbody th{font-size:.72rem}
+                tbody td{font-size:.82rem}
+                .foot{font-size:.7rem; padding:12px}
+              }
             </style>
             </head>
             <body>
               <div class="container">
                 <div class="header">
-                  <h1>📈 ${symbol} — Historical Data</h1>
+                  <h1>${symbol} — Historical Data</h1>
                   <p>Quarter-End Closing Prices &middot; Last 10 Years &middot; Newest First</p>
                 </div>
                 <div class="table-wrap">
@@ -790,7 +790,7 @@ def index():
 
 @app.route("/proxy")
 def proxy():
-    symbol = request.args.get("symbol", "BBCA.JK")
+    symbol = request.args.get("symbol", "0700.HK")
     range_ = request.args.get("range", "10y")
     interval = request.args.get("interval", "1d")
     url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?range={range_}&interval={interval}"
