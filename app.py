@@ -1,0 +1,812 @@
+from flask import Flask, request, jsonify, render_template_string
+import requests
+
+app = Flask(__name__)
+
+HTML_PAGE = r'''<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EquiTally</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💼</text></svg>" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+      :root {
+        --bg-body: #f1f5f9; --bg-card: #ffffff; --text-main: #1e293b;
+        --text-secondary: #64748b; --border: #e2e8f0; --primary: #2563eb;
+        --primary-hover: #1d4ed8; --success: #10b981; --danger: #ef4444;
+        --counter-color: #6c5ce7; --input-bg: #ffffff; --output-bg: #f8fafc;
+        --radio-bg: #f8f9fa; --link-bg: #f8f9fa; --link-text: #34495e;
+      }
+      [data-theme="dark"] {
+        --bg-body: #0f172a; --bg-card: #1e293b; --text-main: #f1f5f9;
+        --text-secondary: #94a3b8; --border: #334155; --primary: #3b82f6;
+        --primary-hover: #2563eb; --counter-color: #a29bfe; --input-bg: #334155;
+        --output-bg: #0f172a; --radio-bg: #334155; --link-bg: #334155; --link-text: #f1f5f9;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box;
+        font-family: "Inter", system-ui, -apple-system, sans-serif;
+        transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; }
+      body { background-color: var(--bg-body); color: var(--text-main); min-height: 100vh; padding: 30px 15px 60px; }
+      header { max-width: 1200px; margin: 0 auto 2rem auto; display: flex;
+        justify-content: space-between; align-items: center; gap: 12px;
+        flex-wrap: wrap; border-bottom: 2px solid var(--border); padding-bottom: 1rem; }
+      header h1 { font-size: clamp(1.4rem, 3.2vw, 1.8rem); font-weight: 800; letter-spacing: -0.5px; }
+      .theme-toggle { background-color: var(--bg-card); color: var(--text-main);
+        border: 1px solid var(--border); padding: 8px 16px; border-radius: 20px;
+        font-size: 0.9rem; font-weight: 600; cursor: pointer; display: flex;
+        align-items: center; gap: 6px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+      .theme-toggle:hover { opacity: 0.9; }
+      .dashboard-grid { max-width: 1200px; margin: 0 auto; display: grid;
+        grid-template-columns: repeat(12, 1fr); gap: 20px; }
+      .card { background: var(--bg-card); padding: 25px; border-radius: 16px;
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); border: 1px solid var(--border); }
+      .card h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 1.2rem;
+        border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+      .stock-card { grid-column: span 7; }
+      .side-panel { grid-column: span 5; display: flex; flex-direction: column; gap: 20px; }
+      .converter-card { grid-column: span 12; }
+      @media (max-width: 992px) { .stock-card, .side-panel { grid-column: span 12; } }
+      .input-group { margin-bottom: 15px; }
+      label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; color: var(--text-secondary); }
+      input[type="text"] { width: 100%; padding: 12px; border: 2px solid var(--border);
+        background-color: var(--input-bg); color: var(--text-main); border-radius: 8px; font-size: 15px; }
+      input[type="text"]:focus, textarea:focus { border-color: var(--primary); outline: none; }
+      .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 8px; background: var(--radio-bg); padding: 12px; border: 1px solid var(--border);
+        border-radius: 8px; max-height: 150px; overflow-y: auto; }
+      .checkbox-grid.is-disabled { opacity: 0.45; pointer-events: none; user-select: none; }
+      .check-option, .radio-option { font-size: 13px; color: var(--text-main);
+        display: flex; align-items: center; cursor: pointer; }
+      .check-option input, .radio-option input { margin-right: 8px; cursor: pointer; }
+      .radio-group { display: flex; gap: 15px; background: var(--radio-bg);
+        padding: 10px; border-radius: 8px; border: 1px solid var(--border); flex-wrap: wrap; }
+      .source-note { display: none; margin-top: 8px; font-size: 11.5px;
+        line-height: 1.55; color: var(--text-secondary); text-align: left;
+        background: var(--radio-bg); border: 1px dashed var(--border);
+        border-radius: 8px; padding: 8px 10px; }
+      button.btn-action { padding: 12px 20px; font-size: 14px; font-weight: 600;
+        border: none; border-radius: 8px; cursor: pointer; display: inline-flex;
+        align-items: center; justify-content: center; gap: 5px; }
+      .btn-primary { background-color: var(--primary); color: #ffffff; }
+      .btn-primary:hover { background-color: var(--primary-hover); }
+      .btn-danger { background-color: var(--danger); color: #ffffff; }
+      .btn-danger:hover { opacity: 0.9; }
+      .btn-success { background-color: var(--success); color: #ffffff; }
+      .btn-success:hover { opacity: 0.9; }
+      .btn-ghost { background-color: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); }
+      .btn-ghost:hover { background-color: var(--radio-bg); }
+      #linkContainer { margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); display: none; }
+      .link-item { display: block; background: var(--link-bg); margin-bottom: 6px;
+        padding: 8px 12px; text-decoration: none; color: var(--link-text);
+        border-radius: 6px; font-size: 13px; border-left: 4px solid var(--primary); }
+      .link-item:hover { background: var(--primary); color: #ffffff; }
+      .link-item.is-local { border-left-color: var(--success); }
+      .hint { font-size: 11px; color: var(--text-secondary); text-align: center; margin-top: 10px; }
+      .counter-display { font-size: 3.5rem; font-weight: 800; color: var(--counter-color);
+        margin: 10px 0; text-align: center; transition: transform 0.1s ease; }
+      .counter-buttons { display: flex; gap: 10px; }
+      .case-card textarea { width: 100%; height: 120px; padding: 12px;
+        border: 2px solid var(--border); border-radius: 8px; font-size: 14px;
+        background: var(--input-bg); color: var(--text-main); margin-bottom: 10px;
+        resize: vertical; outline: none; }
+      .text-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+        gap: 6px; margin-bottom: 12px; }
+      .text-controls button { padding: 8px 4px; border: 1px solid var(--border);
+        border-radius: 6px; background: var(--radio-bg); color: var(--text-main);
+        cursor: pointer; font-size: 11px; font-weight: 600; }
+      .text-controls button:hover { background: var(--primary); color: #ffffff; }
+      .text-actions { display: flex; gap: 10px; }
+      .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+      .chip { font-size: 12.5px; color: var(--primary); background: var(--radio-bg);
+        border: 1px solid var(--border); padding: 5px 10px; border-radius: 999px;
+        font-variant-numeric: tabular-nums; white-space: nowrap; }
+      .chip b { color: var(--primary); font-weight: 700; }
+      .converter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+      @media (max-width: 820px) { .converter-grid { grid-template-columns: 1fr; } }
+      .panel { display: flex; flex-direction: column; min-width: 0; }
+      .panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+      .panel-head label { font-weight: 600; font-size: 14px; color: var(--text-secondary); margin-bottom: 0; }
+      .panel-meta { font-size: 12px; color: var(--text-secondary); text-align: right; }
+      .converter-card textarea { width: 100%; min-height: min(40vh, 300px); padding: 14px 16px;
+        border: 2px solid var(--border); border-radius: 12px; background: var(--input-bg);
+        color: var(--text-main); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 14.5px; line-height: 1.7; resize: vertical; outline: none; }
+      #output { background: var(--output-bg); }
+      .options { margin-top: 14px; display: flex; align-items: center; gap: 8px;
+        font-size: 14px; color: var(--text-secondary); cursor: pointer; user-select: none; }
+      .options input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary); cursor: pointer; }
+      .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+      .foot { margin: 18px 2px 0; font-size: 12.5px; color: var(--text-secondary); line-height: 1.6; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>EquiTally</h1>
+      <button class="theme-toggle" id="themeMasterBtn" title="Switch Global Interface Theme">
+        <span id="themeMasterText">🌙 Dark Mode</span>
+      </button>
+    </header>
+
+    <main class="dashboard-grid">
+      <section class="card stock-card">
+        <h2>📊 Stock Multi-Tab Researcher</h2>
+        <div class="input-group">
+          <label for="exchange_name">Exchange Name</label>
+          <input type="text" id="exchange_name" list="exchange_list" placeholder="Search Country or Exchange..." />
+          <datalist id="exchange_list"></datalist>
+        </div>
+        <div class="input-group">
+          <label for="ticker_symbol">Ticker Symbol</label>
+          <input type="text" id="ticker_symbol" placeholder="Example: 601398" />
+        </div>
+        <div class="input-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label style="margin-bottom: 0">Select Data Points</label>
+            <div style="font-size: 11px; font-weight: bold">
+              <span onclick="toggleAllCheckboxes(true)" style="cursor: pointer; color: var(--primary)">All</span>
+              |
+              <span onclick="toggleAllCheckboxes(false)" style="cursor: pointer; color: var(--primary)">None</span>
+            </div>
+          </div>
+          <div class="checkbox-grid" id="checkboxGrid">
+            <label class="check-option"><input type="checkbox" value="news" /> Latest News</label>
+            <label class="check-option"><input type="checkbox" value="overview" /> Overview</label>
+            <label class="check-option"><input type="checkbox" value="stats" /> Ratios</label>
+            <label class="check-option"><input type="checkbox" value="history" /> Historical Data</label>
+            <label class="check-option"><input type="checkbox" value="income" /> Income Statement</label>
+            <label class="check-option"><input type="checkbox" value="balance" /> Balance Sheet</label>
+            <label class="check-option"><input type="checkbox" value="cash" /> Cash Flow</label>
+            <label class="check-option"><input type="checkbox" value="revenue" /> Revenue</label>
+            <label class="check-option"><input type="checkbox" value="dividends" /> Dividends</label>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Data Source Support</label>
+          <div class="radio-group">
+            <label class="radio-option"><input type="radio" name="source" value="package" checked /> Package</label>
+            <label class="radio-option"><input type="radio" name="source" value="stockanalysis" /> StockAnalysis</label>
+            <label class="radio-option"><input type="radio" name="source" value="tradingview" /> TradingView</label>
+          </div>
+          <p class="source-note" id="packageNote">
+            <b>Package mode</b> opens a fixed bundle of <b>6 tabs</b>:
+            <br />• 🏢 Overview — StockAnalysis &amp; TradingView
+            <br />• 📊 Ratios — TradingView
+            <br />• ⏳ Historical Data — Python (yfinance quarterly closes)
+            <br />• 📑 Income Statement — TradingView
+            <br />• ⚖️ Balance Sheet — TradingView
+          </p>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 15px">
+          <button class="btn-action btn-primary" style="flex: 2" onclick="processSearch()">Open All Selected Tabs</button>
+          <button class="btn-action btn-danger" style="flex: 1" onclick="resetStockForm()">Reset</button>
+        </div>
+        <div id="linkContainer"><label>Manual Generated Links:</label><div id="linkList"></div></div>
+        <p id="hintText" class="hint" style="display: none">If tabs do not open automatically, please <b>Allow Pop-ups</b>.</p>
+      </section>
+
+      <div class="side-panel">
+        <section class="card">
+          <h2>🖱️ Click Counter</h2>
+          <div class="counter-display" id="counter-value">0</div>
+          <div class="counter-buttons">
+            <button class="btn-action btn-primary" id="click-btn" style="flex: 2">CLICK HERE</button>
+            <button class="btn-action btn-danger" id="reset-counter-btn" style="flex: 1">Reset</button>
+          </div>
+        </section>
+        <section class="card case-card">
+          <h2>🔤 Text Case Converter</h2>
+          <textarea id="textInput" placeholder="Type or paste alphanumeric string data records here..."></textarea>
+          <div class="text-controls">
+            <button onclick="transformText('upper')">UPPERCASE</button>
+            <button onclick="transformText('lower')">lowercase</button>
+            <button onclick="transformText('capitalize')">Capitalize Word</button>
+            <button onclick="transformText('sentence')">Sentence case</button>
+            <button onclick="transformText('toggle')">tOGGLE cASE</button>
+          </div>
+          <div class="text-actions">
+            <button class="btn-action btn-success" style="flex: 2" onclick="copyText()">Copy to Clipboard</button>
+            <button class="btn-action btn-danger" style="flex: 1" onclick="clearText()">Clear</button>
+          </div>
+        </section>
+      </div>
+
+      <section class="card converter-card">
+        <h2>🔢 ZeroShift — Value Scaler</h2>
+        <div class="legend">
+          <span class="chip"><b>K</b> ×1,000</span>
+          <span class="chip"><b>M</b> ×1,000,000</span>
+          <span class="chip"><b>B</b> ×1,000,000,000</span>
+          <span class="chip"><b>T</b> ×1,000,000,000,000</span>
+        </div>
+        <div class="converter-grid">
+          <div class="panel">
+            <div class="panel-head"><label for="input">Input</label><span class="panel-meta">one value per line</span></div>
+            <textarea id="input" spellcheck="false" placeholder="9.26 T&#10;−2.05%&#10;9.70 T&#10;+4.25%"></textarea>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><label for="output">Output</label><span class="panel-meta" id="stats"></span></div>
+            <textarea id="output" spellcheck="false" readonly wrap="off" placeholder="Converted values will appear here…"></textarea>
+          </div>
+        </div>
+        <label class="options">
+          <input type="checkbox" id="reverseOrder" checked />
+          Reverse order (Right-to-Left paste) — Adjust according to your sheet
+        </label>
+        <div class="actions">
+          <button id="copyBtn" class="btn-action btn-primary" type="button">Copy result</button>
+          <button id="sampleBtn" class="btn-action btn-ghost" type="button">Load sample</button>
+          <button id="clearBtn" class="btn-action btn-ghost" type="button">Clear</button>
+        </div>
+        <p class="foot">Output values are separated by tabs. Paste into a spreadsheet row. Commas as thousand separators, no decimal point. Percentage lines ignored.</p>
+      </section>
+    </main>
+
+    <script>
+      const exchangeInput = document.getElementById("exchange_name");
+      const tickerInput = document.getElementById("ticker_symbol");
+      const radioButtons = document.querySelectorAll('input[name="source"]');
+      const checkboxGrid = document.getElementById("checkboxGrid");
+      const packageNote = document.getElementById("packageNote");
+      const textInput = document.getElementById("textInput");
+      const themeMasterBtn = document.getElementById("themeMasterBtn");
+      const themeMasterText = document.getElementById("themeMasterText");
+      const counterDisplay = document.getElementById("counter-value");
+      const clickBtn = document.getElementById("click-btn");
+      const resetCounterBtn = document.getElementById("reset-counter-btn");
+      let count = 0;
+
+      const exchanges = [
+        { name: "Abu Dhabi Securities Exchange (United Arab Emirates)", code: "ADX" },
+        { name: "Amman Stock Exchange (Jordan)", code: "ASE" },
+        { name: "Australian Securities Exchange (Australia)", code: "ASX" },
+        { name: "Bombay Stock Exchange (India)", code: "BOM" },
+        { name: "Borsa Italiana (Italy)", code: "BIT" },
+        { name: "Bursa Malaysia (Malaysia)", code: "KLSE" },
+        { name: "Deutsche Börse Xetra (Germany)", code: "ETR" },
+        { name: "Euronext Paris (Poland)", code: "WSE" },
+        { name: "Hong Kong Stock Exchange (Hong Kong)", code: "HKG" },
+        { name: "Indonesia Stock Exchange (Indonesia)", code: "IDX" },
+        { name: "London Stock Exchange (United Kingdom)", code: "LON" },
+        { name: "Nasdaq Stock Market (United States)", code: "NASDAQ" },
+        { name: "National Stock Exchange of India (India)", code: "NSE" },
+        { name: "New York Stock Exchange (United States)", code: "NYSE" },
+        { name: "Shanghai Stock Exchange (China)", code: "SHA" },
+        { name: "Shenzhen Stock Exchange (China)", code: "SHE" },
+        { name: "Singapore Exchange (Singapore)", code: "SGX" },
+        { name: "Taiwan Stock Exchange (Taiwan)", code: "TPE" },
+        { name: "Tokyo Stock Exchange (Japan)", code: "TYO" },
+        { name: "Toronto Stock Exchange (Canada)", code: "TSX" },
+      ];
+
+      const YAHOO_SUFFIX_MAP = {
+        IDX: ".JK", HKG: ".HK", TYO: ".T", LON: ".L", SHA: ".SS", SHE: ".SZ",
+        TPE: ".TW", KLSE: ".KL", ASX: ".AX", TSX: ".TO", BIT: ".MI", ETR: ".DE",
+        WSE: ".WA", BOM: ".BO", NSE: ".NS", SGX: ".SI", ASE: ".AM", ADX: ".AD",
+      };
+
+      window.addEventListener("DOMContentLoaded", () => {
+        const list = document.getElementById("exchange_list");
+        exchanges.forEach((ex) => {
+          const option = document.createElement("option");
+          option.value = ex.name;
+          option.setAttribute("data-code", ex.code);
+          list.appendChild(option);
+        });
+        updateSourceUI();
+      });
+
+      function setTheme(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        localStorage.setItem("theme", theme);
+        themeMasterText.innerText = theme === "dark" ? "☀️ Light Mode" : "🌙 Dark Mode";
+      }
+      themeMasterBtn.addEventListener("click", () => {
+        const currentTheme = document.documentElement.getAttribute("data-theme");
+        setTheme(currentTheme === "dark" ? "light" : "dark");
+      });
+      setTheme(localStorage.getItem("theme") || "light");
+
+      function getToastConfig(icon, title) {
+        const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+        return { toast: true, position: "top", showConfirmButton: false, timer: 3000,
+          timerProgressBar: true, background: isDark ? "#1e293b" : "#ffffff",
+          color: isDark ? "#f1f5f9" : "#1e293b", icon: icon, title: title };
+      }
+
+      const TV_EXCHANGE_MAP = { ETR: "EXTR", SHA: "SSE", SHE: "SZSE", TPE: "TWSE" };
+      function toTitleCase(str) { return str.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()); }
+      function getSelectedSource() { return document.querySelector('input[name="source"]:checked').value; }
+      function getSelectedDataPoints() {
+        return Array.from(document.querySelectorAll("#checkboxGrid input:checked")).map((cb) => cb.value);
+      }
+      function resolveExchangeCode(rawValue) {
+        const raw = String(rawValue || "").trim();
+        const found = exchanges.find((ex) => ex.name.toLowerCase() === raw.toLowerCase());
+        return found ? found.code : raw;
+      }
+      function saBaseUrl(exchangeCode, ticker) {
+        const ex = String(exchangeCode).toLowerCase();
+        const tk = String(ticker).toLowerCase();
+        return ["otc", "nasdaq", "nyse", "amex"].includes(ex)
+          ? `https://www.stockanalysis.com/stocks/${tk}`
+          : `https://www.stockanalysis.com/quote/${ex}/${tk}`;
+      }
+      function mapTvExchange(exchangeCode) {
+        const ex = String(exchangeCode).toUpperCase();
+        return TV_EXCHANGE_MAP[ex] || ex;
+      }
+      function tvSymbol(exchangeCode, ticker) {
+        return `${mapTvExchange(exchangeCode)}-${String(ticker).toUpperCase()}`;
+      }
+
+      function buildStockAnalysisTargets(exchangeCode, ticker) {
+        const ex = String(exchangeCode).toLowerCase();
+        const tk = String(ticker).toLowerCase();
+        const baseUrl = saBaseUrl(ex, tk);
+        return [
+          { id: "news", name: "📰 Latest News", url: `https://www.google.com/search?q=${ex}:%20${tk}&tbm=nws` },
+          { id: "overview", name: "🏢 Overview", url: `${baseUrl}/company` },
+          { id: "stats", name: "📊 Financial Ratios", url: `${baseUrl}/financials/ratios/?p=quarterly` },
+          { id: "history", name: "⏳ Historical Data", url: `${baseUrl}/history/` },
+          { id: "income", name: "📑 Income Statement", url: `${baseUrl}/financials/income-statement/?p=quarterly` },
+          { id: "balance", name: "⚖️ Balance Sheet", url: `${baseUrl}/financials/balance-sheet/?p=quarterly` },
+          { id: "cash", name: "🔄 Cash Flow", url: `${baseUrl}/financials/cash-flow-statement/?p=quarterly` },
+          { id: "revenue", name: "💰 Revenue", url: `${baseUrl}/financials/metrics/` },
+          { id: "dividends", name: "💸 Dividends", url: `${baseUrl}/dividend/` },
+        ];
+      }
+
+      function buildTradingViewTargets(exchangeCode, ticker) {
+        const tvEx = mapTvExchange(exchangeCode);
+        const tk = String(ticker).toUpperCase();
+        const base = `https://www.tradingview.com/symbols/${tvEx}-${tk}`;
+        return [
+          { id: "news", name: "📰 Latest News", url: `https://www.google.com/search?q=${tvEx}:%20${tk}&tbm=nws` },
+          { id: "overview", name: "🏢 Overview", url: `${base}/` },
+          { id: "stats", name: "📊 Financial Stats", url: `${base}/financials-statistics-and-ratios/?statistics-period=FQ&selected=price_earnings%2Cprice_book` },
+          { id: "history", name: "⏳ Historical Data", url: `${base}/?timeframe=120M` },
+          { id: "income", name: "📑 Income Statement", url: `${base}/financials-income-statement/?statements-period=FQ&selected=total_revenue%2Cnet_income%2Cbasic_shares_outstanding` },
+          { id: "balance", name: "⚖️ Balance Sheet", url: `${base}/financials-balance-sheet/?statements-period=FQ&selected=total_equity` },
+          { id: "cash", name: "🔄 Cash Flow", url: `${base}/financials-cash-flow/?statements-period=FQ` },
+          { id: "revenue", name: "💰 Revenue", url: `${base}/financials-revenue/` },
+          { id: "dividends", name: "💸 Dividends", url: `${base}/financials-dividends/` },
+        ];
+      }
+
+      function buildPackageTargets(exchangeCode, ticker) {
+        const sa = saBaseUrl(exchangeCode, ticker);
+        const tv = `https://www.tradingview.com/symbols/${tvSymbol(exchangeCode, ticker)}`;
+        return [
+          { id: "pkg-overview-sa", name: "🏢 Overview — StockAnalysis", url: `${sa}/company` },
+          { id: "pkg-overview-tv", name: "🏢 Overview — TradingView", url: `${tv}/` },
+          { id: "pkg-ratios-tv", name: "📊 Ratios — TradingView", url: `${tv}/financials-statistics-and-ratios/?statistics-period=FQ&selected=price_earnings%2Cprice_book` },
+          { id: "pkg-history-py", name: "⏳ Historical Data — Python (yfinance quarterly closes)", url: "local", local: true },
+          { id: "pkg-income-tv", name: "📑 Income Statement — TradingView", url: `${tv}/financials-income-statement/?statements-period=FQ&selected=total_revenue%2Cnet_income%2Cbasic_shares_outstanding` },
+          { id: "pkg-balance-tv", name: "⚖️ Balance Sheet — TradingView", url: `${tv}/financials-balance-sheet/?statements-period=FQ&selected=total_equity` },
+        ];
+      }
+
+      function handleInputCase(e) {
+        const source = getSelectedSource();
+        if (e.target.id === "exchange_name") { e.target.value = toTitleCase(e.target.value); return; }
+        if (source === "stockanalysis") { e.target.value = e.target.value.toLowerCase(); }
+        else if (source === "tradingview") { e.target.value = e.target.value.toUpperCase(); }
+      }
+      exchangeInput.addEventListener("input", handleInputCase);
+      tickerInput.addEventListener("input", handleInputCase);
+
+      function updateSourceUI() {
+        const source = getSelectedSource();
+        const isPackage = source === "package";
+        checkboxGrid.classList.toggle("is-disabled", isPackage);
+        checkboxGrid.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.disabled = isPackage));
+        packageNote.style.display = isPackage ? "block" : "none";
+        if (source === "stockanalysis") { tickerInput.value = tickerInput.value.toLowerCase(); }
+        else if (source === "tradingview") { tickerInput.value = tickerInput.value.toUpperCase(); }
+      }
+      radioButtons.forEach((r) => r.addEventListener("change", updateSourceUI));
+
+      function toggleAllCheckboxes(selectAll) {
+        if (getSelectedSource() === "package") return;
+        checkboxGrid.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.checked = selectAll));
+      }
+
+      function processQuarterlyData(timestamps, closes) {
+        let quarterData = [];
+        let currentQuarter = null, lastClose = null, prevDate = null;
+        for (let i = 0; i < timestamps.length; i++) {
+          if (closes[i] === null || closes[i] === undefined) continue;
+          const date = new Date(timestamps[i] * 1000);
+          const year = date.getFullYear();
+          const month = date.getMonth();
+          const quarter = Math.floor(month / 3) + 1;
+          const qKey = `${year}-Q${quarter}`;
+          const dateStr = date.toISOString().split("T")[0];
+          if (currentQuarter !== qKey) {
+            if (currentQuarter !== null && lastClose !== null) quarterData.push({ date: prevDate, close: lastClose });
+            currentQuarter = qKey;
+          }
+          lastClose = closes[i];
+          prevDate = dateStr;
+        }
+        if (currentQuarter !== null && lastClose !== null) quarterData.push({ date: prevDate, close: lastClose });
+        quarterData.sort((a, b) => new Date(b.date) - new Date(a.date));
+        return quarterData;
+      }
+
+      async function openHistoryTab(exchangeCode, ticker) {
+        const newTab = window.open("", "_blank");
+        if (!newTab) {
+          Swal.fire(getToastConfig("error", "Popup blocked! Please allow popups for this site."));
+          return;
+        }
+        newTab.document.write(`<html><head><title>Loading...</title></head><body style="font-family:system-ui;padding:40px;text-align:center;background:#f1f5f9"><h2>Fetching historical data for ${ticker}...</h2><p>Please wait.</p></body></html>`);
+
+        const suffix = YAHOO_SUFFIX_MAP[exchangeCode.toUpperCase()] || "";
+        const symbol = ticker.toUpperCase() + suffix;
+        const proxyUrl = `/proxy?symbol=${encodeURIComponent(symbol)}&range=10y&interval=1d`;
+
+        try {
+          const response = await fetch(proxyUrl);
+          if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(`Server returned ${response.status}: ${errText.slice(0, 200)}`);
+          }
+          const data = await response.json();
+          if (!data.chart || !data.chart.result || data.chart.result.length === 0) {
+            throw new Error("No data found for this ticker symbol.");
+          }
+          const result = data.chart.result[0];
+          const timestamps = result.timestamp;
+          const closes = result.indicators.quote[0].close;
+          if (!timestamps || !closes) throw new Error("Incomplete data received.");
+          const quarterData = processQuarterlyData(timestamps, closes);
+          if (quarterData.length === 0) throw new Error("No quarterly data available.");
+
+          const fmtClose = (v) =>
+            v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+          const html = `<!DOCTYPE html>
+            <html lang="en">
+            <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>Historical Data — ${symbol}</title>
+            <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💼</text></svg>" />
+            <style>
+              :root{
+                --bg:#f1f5f9; --card:#ffffff; --text:#1e293b; --muted:#64748b;
+                --border:#e2e8f0; --primary:#2563eb; --stripe:#f8fafc; --hover:#eff6ff;
+              }
+              @media (prefers-color-scheme: dark){
+                :root{
+                  --bg:#0f172a; --card:#1e293b; --text:#f1f5f9; --muted:#94a3b8;
+                  --border:#334155; --primary:#3b82f6; --stripe:#243449; --hover:#2d3f5c;
+                }
+              }
+                *{box-sizing:border-box}
+                body{
+                  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+                  margin:0; padding:22px 14px 44px; background:var(--bg); color:var(--text);
+                  -webkit-text-size-adjust:100%;
+                }
+                .container{
+                  max-width:1100px; margin:0 auto; background:var(--card); border-radius:14px;
+                  box-shadow:0 10px 25px -5px rgba(0,0,0,.15); overflow:hidden;
+                }
+                .header{background:var(--primary); color:#fff; padding:22px 18px; text-align:center}
+                .header h1{margin:0; font-size:clamp(1.05rem,3.4vw,1.5rem); font-weight:800; word-break:break-word}
+                .header p{margin:6px 0 0; font-size:clamp(.74rem,2.4vw,.9rem); opacity:.88}
+                .table-wrap{width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+                table{border-collapse:collapse; width:100%; min-width:max-content}
+                
+                /* Padding ditambah agar cell lebih lega */
+                th,td{padding:14px 22px; border-bottom:1px solid var(--border); white-space:nowrap;
+                      font-variant-numeric:tabular-nums}
+                      
+                thead th{
+                  background:var(--stripe); color:var(--muted); font-size:.76rem; font-weight:700;
+                  letter-spacing:.4px; text-transform:uppercase; text-align:center;
+                  position:sticky; top:0; z-index:3;
+                }
+                
+                /* MEMBUAT QUARTER-END STICKY DI KIRI ATAS */
+                thead th:first-child {
+                  left: 0;
+                  z-index: 4; /* Harus lebih tinggi dari header tanggal dan Close Price */
+                }
+                
+                tbody th{
+                  position:sticky; left:0; z-index:2; background:var(--stripe); text-align:left;
+                  font-size:.8rem; font-weight:700; color:var(--muted);
+                  text-transform:uppercase; letter-spacing:.4px;
+                  border-right:1px solid var(--border);
+                }
+                tbody td{text-align:center; font-size:.9rem; font-weight:600; color:var(--text)}
+                tbody tr:hover td{background:var(--hover)}
+                tbody tr:last-child th, tbody tr:last-child td{border-bottom:none}
+                .foot{padding:14px 18px; font-size:.75rem; color:var(--muted); text-align:center; line-height:1.6}
+                
+                /* Penyesuaian padding untuk layar kecil */
+                @media (max-width:600px){
+                  body{padding:12px 8px 30px}
+                  .header{padding:18px 12px}
+                  th,td{padding:10px 14px}
+                  thead th{font-size:.68rem}
+                  tbody th{font-size:.72rem}
+                  tbody td{font-size:.82rem}
+                  .foot{font-size:.7rem; padding:12px}
+                }
+            </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                  <h1>📈 ${symbol} — Historical Data</h1>
+                  <p>Quarter-End Closing Prices &middot; Last 10 Years &middot; Newest First</p>
+                </div>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th scope="col">Quarter-End</th>
+                        ${quarterData.map((d) => `<th scope="col">${d.date}</th>`).join("")}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <th scope="row">Close Price</th>
+                        ${quarterData.map((d) => `<td>${fmtClose(d.close)}</td>`).join("")}
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p class="foot">Swipe horizontally to view every quarter. All figures are quarter-end closing prices in the listing currency.</p>
+              </div>
+            </body>
+            </html>`;
+          newTab.document.open();
+          newTab.document.write(html);
+          newTab.document.close();
+        } catch (error) {
+          console.error("Error fetching history:", error);
+          newTab.document.open();
+          newTab.document.write(`<!DOCTYPE html>
+            <html lang="en">
+            <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>Historical Data — Error</title>
+            <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💼</text></svg>" />
+            </head>
+            <body style="font-family:system-ui;padding:40px 20px;text-align:center;background:#f1f5f9;color:#1e293b;margin:0">
+              <h2 style="color:#ef4444;margin:0 0 10px">Error Fetching Data</h2>
+              <p style="margin:0 0 8px">${error.message}</p>
+              <p style="font-size:.9rem;color:#64748b;margin:0">Please check the ticker symbol and try again.</p>
+            </body>
+            </html>`);
+          newTab.document.close();
+        }
+      }
+
+      function processSearch() {
+        const rawExchange = exchangeInput.value.trim();
+        const ticker = tickerInput.value.trim();
+        const source = getSelectedSource();
+        if (!rawExchange || !ticker) {
+          Swal.fire(getToastConfig("error", "Exchange & Ticker code specifications are required!"));
+          return;
+        }
+        const exchangeCode = resolveExchangeCode(rawExchange);
+        let targets = [];
+        if (source === "package") {
+          targets = buildPackageTargets(exchangeCode, ticker);
+        } else {
+          const selectedData = getSelectedDataPoints();
+          if (selectedData.length === 0) {
+            Swal.fire(getToastConfig("warning", "Select at least one tracking data configuration point!"));
+            return;
+          }
+          const allTargets = source === "stockanalysis" ? buildStockAnalysisTargets(exchangeCode, ticker) : buildTradingViewTargets(exchangeCode, ticker);
+          targets = allTargets.filter((t) => selectedData.includes(t.id));
+        }
+        Swal.fire(getToastConfig("success", `Opening ${targets.length} analysis tabs layout links window`));
+        document.getElementById("hintText").style.display = "block";
+        const container = document.getElementById("linkContainer");
+        const list = document.getElementById("linkList");
+        list.innerHTML = "";
+        container.style.display = "block";
+        targets.forEach((item, index) => {
+          const a = document.createElement("a");
+          a.href = item.local ? "#" : item.url;
+          a.target = item.local ? "_self" : "_blank";
+          a.className = item.local ? "link-item is-local" : "link-item";
+          a.innerText = item.name;
+          if (item.local) { a.addEventListener("click", (e) => { e.preventDefault(); openHistoryTab(exchangeCode, ticker); }); }
+          list.appendChild(a);
+          setTimeout(() => {
+            if (item.local) { openHistoryTab(exchangeCode, ticker); }
+            else { window.open(item.url, "_blank"); }
+          }, index * 350);
+        });
+      }
+
+      function resetStockForm() {
+        exchangeInput.value = "";
+        tickerInput.value = "";
+        checkboxGrid.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.checked = false));
+        document.getElementById("linkContainer").style.display = "none";
+        document.getElementById("hintText").style.display = "none";
+        Swal.fire(getToastConfig("success", "Stock profile inputs configuration reset."));
+      }
+
+      clickBtn.addEventListener("click", () => {
+        count++;
+        counterDisplay.textContent = count;
+        counterDisplay.style.transform = "scale(1.15)";
+        setTimeout(() => { counterDisplay.style.transform = "scale(1)"; }, 100);
+      });
+      resetCounterBtn.addEventListener("click", () => {
+        const currentTheme = document.documentElement.getAttribute("data-theme");
+        Swal.fire({ title: "Reset counter metrics?", icon: "warning", showCancelButton: true,
+          confirmButtonText: "Yes", confirmButtonColor: "#ef4444", cancelButtonColor: "#64748b",
+          background: currentTheme === "dark" ? "#1e293b" : "#ffffff",
+          color: currentTheme === "dark" ? "#f1f5f9" : "#1e293b" }).then((result) => {
+          if (result.isConfirmed) { count = 0; counterDisplay.textContent = count; Swal.fire(getToastConfig("success", "Metrics cleared back to zero.")); }
+        });
+      });
+
+      window.addEventListener("keydown", (e) => {
+        if (((e.ctrlKey || e.metaKey) && e.key === "r") || e.key === "F5") {
+          e.preventDefault();
+          Swal.fire(getToastConfig("info", "Shortcut refresh captured safely to maintain metrics state data stability."));
+          return;
+        }
+        if (e.key === "Enter") {
+          const tag = (e.target.tagName || "").toUpperCase();
+          if (tag === "TEXTAREA") return;
+          if (tag === "BUTTON") return;
+          e.preventDefault();
+          processSearch();
+        }
+      });
+
+      function transformText(type) {
+        let str = textInput.value;
+        if (!str.trim()) { Swal.fire(getToastConfig("warning", "Workspace input target value field is empty!")); return; }
+        switch (type) {
+          case "upper": textInput.value = str.toUpperCase(); break;
+          case "lower": textInput.value = str.toLowerCase(); break;
+          case "capitalize": textInput.value = str.toLowerCase().split(/\s+/).map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" "); break;
+          case "sentence": let low = str.toLowerCase().trim(); textInput.value = low.charAt(0).toUpperCase() + low.slice(1); break;
+          case "toggle": textInput.value = str.split("").map((c) => c === c.toUpperCase() ? c.toLowerCase() : c.toUpperCase()).join(""); break;
+        }
+      }
+      function copyText() {
+        if (!textInput.value.trim()) { Swal.fire(getToastConfig("error", "No printable text characters array string value found to copy inside document buffer!")); return; }
+        textInput.select();
+        navigator.clipboard.writeText(textInput.value).then(() => { Swal.fire(getToastConfig("success", "Value saved cleanly inside system clipboard stack!")); });
+      }
+      function clearText() {
+        if (!textInput.value) return;
+        textInput.value = "";
+        Swal.fire(getToastConfig("success", "Text records purged safely."));
+      }
+
+      (function () {
+        "use strict";
+        var inputEl = document.getElementById("input");
+        var outputEl = document.getElementById("output");
+        var statsEl = document.getElementById("stats");
+        var copyBtn = document.getElementById("copyBtn");
+        var sampleBtn = document.getElementById("sampleBtn");
+        var clearBtn = document.getElementById("clearBtn");
+        var reverseCheckbox = document.getElementById("reverseOrder");
+        var MULT = { K: 1000n, M: 1000000n, B: 1000000000n, T: 1000000000000n };
+        var INVISIBLE = /[\u200b-\u200f\u202a-\u202e\u2066-\u2069\ufeff]/g;
+        var SAMPLE = ["9.26 T","\u22122.05%","9.70 T","+4.25%","10.33 T","+9.01%","9.90 T","+1.90%","10.55 T","+13.93%","10.06 T","+3.75%","10.12 T","\u22122.02%","11.64 T","+17.60%"].join("\n");
+        function groupThousands(digits) { return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+        function convertLine(line) {
+          var s = String(line).replace(INVISIBLE, "").trim();
+          if (!s) return { skip: true };
+          if (s.indexOf("%") !== -1) return { skip: true };
+          s = s.replace(/\u2212/g, "-").replace(/[\u2013\u2014]/g, "-").replace(/\s+/g, "");
+          var m = s.match(/^([+-]?)(\d+(?:[.,]\d+)?)([KMBT])?$/i);
+          if (!m) return { invalid: true };
+          var numStr = m[2];
+          if (numStr.indexOf(",") !== -1 && numStr.indexOf(".") !== -1) { numStr = numStr.replace(/,/g, ""); }
+          else { numStr = numStr.replace(",", "."); }
+          var suffix = (m[3] || "").toUpperCase();
+          var mult = MULT[suffix] || 1n;
+          var isNeg = m[1] === "-";
+          var parts = numStr.split(".");
+          var intPart = parts[0];
+          var fracPart = parts[1] || "";
+          var digits = (intPart + fracPart).replace(/^0+(?=\d)/, "") || "0";
+          var scale = 10n ** BigInt(fracPart.length);
+          var value = (BigInt(digits) * mult) / scale;
+          var out = groupThousands(value.toString());
+          return { value: (isNeg && value !== 0n ? "-" : "") + out };
+        }
+        function render() {
+          var lines = inputEl.value.split(/\r?\n/);
+          var results = [];
+          var converted = 0, skipped = 0, invalid = 0;
+          for (var i = 0; i < lines.length; i++) {
+            var r = convertLine(lines[i]);
+            if (r.skip) { skipped++; continue; }
+            if (r.invalid) { invalid++; continue; }
+            results.push(r.value); converted++;
+          }
+          if (reverseCheckbox.checked) { results.reverse(); }
+          outputEl.value = results.join("\t");
+          if (!inputEl.value.trim()) { statsEl.textContent = ""; }
+          else {
+            var bits = [converted + " converted"];
+            if (skipped) bits.push(skipped + " skipped");
+            if (invalid) bits.push(invalid + " unrecognised");
+            statsEl.textContent = bits.join(" · ");
+          }
+        }
+        function copyTextToClipboard(text) {
+          if (navigator.clipboard && window.isSecureContext) {
+            return navigator.clipboard.writeText(text).then(function () { return true; }).catch(function () { return legacyCopy(text); });
+          }
+          return Promise.resolve(legacyCopy(text));
+        }
+        function legacyCopy(text) {
+          var ta = document.createElement("textarea");
+          ta.value = text; ta.setAttribute("readonly", "");
+          ta.style.position = "fixed"; ta.style.top = "-1000px"; ta.style.opacity = "0";
+          document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, ta.value.length);
+          var ok = false;
+          try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+          document.body.removeChild(ta); return ok;
+        }
+        inputEl.addEventListener("input", render);
+        reverseCheckbox.addEventListener("change", render);
+        copyBtn.addEventListener("click", function () {
+          var text = outputEl.value.trim();
+          if (!text) { Swal.fire(getToastConfig("warning", "Nothing to copy yet.")); return; }
+          copyTextToClipboard(text).then(function (ok) {
+            Swal.fire(getToastConfig(ok ? "success" : "error", ok ? "Copied! Paste it into your spreadsheet row." : "Copy failed — please select and copy manually."));
+          });
+        });
+        sampleBtn.addEventListener("click", function () { inputEl.value = SAMPLE; render(); inputEl.focus(); });
+        clearBtn.addEventListener("click", function () { inputEl.value = ""; outputEl.value = ""; statsEl.textContent = ""; inputEl.focus(); });
+        render();
+      })();
+    </script>
+  </body>
+</html>'''
+
+
+@app.route("/")
+def index():
+    return render_template_string(HTML_PAGE)
+
+
+@app.route("/proxy")
+def proxy():
+    symbol = request.args.get("symbol", "BBCA.JK")
+    range_ = request.args.get("range", "10y")
+    interval = request.args.get("interval", "1d")
+    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?range={range_}&interval={interval}"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+    try:
+        resp = requests.get(url, headers=headers, timeout=15)
+        return (resp.content, resp.status_code, {"Content-Type": "application/json"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+if __name__ == "__main__":
+    print("=" * 55)
+    print("  EquiTally Server Running")
+    print("  Open:  http://localhost:5000")
+    print("=" * 55)
+    app.run(host="0.0.0.0", port=5000, debug=False)
