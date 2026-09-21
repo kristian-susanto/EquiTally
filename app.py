@@ -82,7 +82,6 @@ HTML_PAGE = r'''<!doctype html>
         padding: 8px 12px; text-decoration: none; color: var(--link-text);
         border-radius: 6px; font-size: 13px; border-left: 4px solid var(--primary); }
       .link-item:hover { background: var(--primary); color: #ffffff; }
-      .link-item.is-local { border-left-color: var(--success); }
       .hint { font-size: 11px; color: var(--text-secondary); text-align: center; margin-top: 10px; }
       .counter-display { font-size: 3.5rem; font-weight: 800; color: var(--counter-color);
         margin: 10px 0; text-align: center; transition: transform 0.1s ease; }
@@ -153,11 +152,11 @@ HTML_PAGE = r'''<!doctype html>
           <div class="checkbox-grid" id="checkboxGrid">
             <label class="check-option"><input type="checkbox" value="news" /> Latest News</label>
             <label class="check-option"><input type="checkbox" value="overview" /> Overview</label>
-            <label class="check-option"><input type="checkbox" value="stats" /> Ratios</label>
             <label class="check-option"><input type="checkbox" value="history" /> Historical Data</label>
             <label class="check-option"><input type="checkbox" value="income" /> Income Statement</label>
             <label class="check-option"><input type="checkbox" value="balance" /> Balance Sheet</label>
             <label class="check-option"><input type="checkbox" value="cash" /> Cash Flow</label>
+            <label class="check-option"><input type="checkbox" value="stats" /> Ratios</label>
             <label class="check-option"><input type="checkbox" value="revenue" /> Revenue</label>
             <label class="check-option"><input type="checkbox" value="dividends" /> Dividends</label>
           </div>
@@ -166,16 +165,16 @@ HTML_PAGE = r'''<!doctype html>
           <label>Data Source Support</label>
           <div class="radio-group">
             <label class="radio-option"><input type="radio" name="source" value="package" checked /> Package</label>
-            <label class="radio-option"><input type="radio" name="source" value="stockanalysis" /> StockAnalysis</label>
             <label class="radio-option"><input type="radio" name="source" value="tradingview" /> TradingView</label>
+            <label class="radio-option"><input type="radio" name="source" value="stockanalysis" /> StockAnalysis</label>
           </div>
           <p class="source-note" id="packageNote">
             <b>Package mode</b> opens a fixed bundle of <b>6 tabs</b>:
             <br />• 🏢 Overview — StockAnalysis &amp; TradingView
-            <br />• 📊 Ratios — TradingView
             <br />• ⏳ Historical Data — Python (yfinance quarterly closes)
             <br />• 📑 Income Statement — TradingView
             <br />• ⚖️ Balance Sheet — TradingView
+            <br />• 📊 Ratios — TradingView
           </p>
         </div>
         <div style="display: flex; gap: 10px; margin-top: 15px">
@@ -213,7 +212,7 @@ HTML_PAGE = r'''<!doctype html>
       </div>
 
       <section class="card converter-card">
-        <h2>🔢 ZeroShift — Value Scaler</h2>
+        <h2>🔢 Financial Shorthand Converter</h2>
         <div class="legend">
           <span class="chip"><b>K</b> ×1,000</span>
           <span class="chip"><b>M</b> ×1,000,000</span>
@@ -341,20 +340,16 @@ HTML_PAGE = r'''<!doctype html>
         return `${mapTvExchange(exchangeCode)}-${String(ticker).toUpperCase()}`;
       }
 
-      function buildStockAnalysisTargets(exchangeCode, ticker) {
-        const ex = String(exchangeCode).toLowerCase();
-        const tk = String(ticker).toLowerCase();
-        const baseUrl = saBaseUrl(ex, tk);
+      function buildPackageTargets(exchangeCode, ticker) {
+        const sa = saBaseUrl(exchangeCode, ticker);
+        const tv = `https://www.tradingview.com/symbols/${tvSymbol(exchangeCode, ticker)}`;
         return [
-          { id: "news", name: "📰 Latest News", url: `https://www.google.com/search?q=${ex}:%20${tk}&tbm=nws` },
-          { id: "overview", name: "🏢 Overview", url: `${baseUrl}/company` },
-          { id: "stats", name: "📊 Financial Ratios", url: `${baseUrl}/financials/ratios/?p=quarterly` },
-          { id: "history", name: "⏳ Historical Data", url: `${baseUrl}/history/` },
-          { id: "income", name: "📑 Income Statement", url: `${baseUrl}/financials/income-statement/?p=quarterly` },
-          { id: "balance", name: "⚖️ Balance Sheet", url: `${baseUrl}/financials/balance-sheet/?p=quarterly` },
-          { id: "cash", name: "🔄 Cash Flow", url: `${baseUrl}/financials/cash-flow-statement/?p=quarterly` },
-          { id: "revenue", name: "💰 Revenue", url: `${baseUrl}/financials/metrics/` },
-          { id: "dividends", name: "💸 Dividends", url: `${baseUrl}/dividend/` },
+          { id: "pkg-overview-sa", name: "🏢 Overview — StockAnalysis", url: `${sa}/company` },
+          { id: "pkg-overview-tv", name: "🏢 Overview — TradingView", url: `${tv}/` },
+          { id: "pkg-history-py", name: "⏳ Historical Data — Python (yfinance quarterly closes)", url: "local", local: true },
+          { id: "pkg-income-tv", name: "📑 Income Statement — TradingView", url: `${tv}/financials-income-statement/?statements-period=FQ&selected=total_revenue%2Cnet_revenue%2Cnet_income%2Cdiluted_shares_outstanding` },
+          { id: "pkg-balance-tv", name: "⚖️ Balance Sheet — TradingView", url: `${tv}/financials-balance-sheet/?statements-period=FQ&selected=total_equity` },
+          { id: "pkg-ratios-tv", name: "📊 Ratios — TradingView", url: `${tv}/financials-statistics-and-ratios/?statistics-period=FQ&selected=price_earnings%2Cprice_book%2Cnet_margin` },
         ];
       }
 
@@ -365,26 +360,30 @@ HTML_PAGE = r'''<!doctype html>
         return [
           { id: "news", name: "📰 Latest News", url: `https://www.google.com/search?q=${tvEx}:%20${tk}&tbm=nws` },
           { id: "overview", name: "🏢 Overview", url: `${base}/` },
-          { id: "stats", name: "📊 Financial Stats", url: `${base}/financials-statistics-and-ratios/?statistics-period=FQ&selected=price_earnings%2Cprice_book` },
           { id: "history", name: "⏳ Historical Data", url: `${base}/?timeframe=120M` },
-          { id: "income", name: "📑 Income Statement", url: `${base}/financials-income-statement/?statements-period=FQ&selected=total_revenue%2Cnet_income%2Cbasic_shares_outstanding` },
+          { id: "income", name: "📑 Income Statement", url: `${base}/financials-income-statement/?statements-period=FQ&selected=total_revenue%2Cnet_revenue%2Cnet_income%2Cdiluted_shares_outstanding` },
           { id: "balance", name: "⚖️ Balance Sheet", url: `${base}/financials-balance-sheet/?statements-period=FQ&selected=total_equity` },
           { id: "cash", name: "🔄 Cash Flow", url: `${base}/financials-cash-flow/?statements-period=FQ` },
+          { id: "stats", name: "📊 Financial Stats", url: `${base}/financials-statistics-and-ratios/?statistics-period=FQ&selected=price_earnings%2Cprice_book%2Cnet_margin` },
           { id: "revenue", name: "💰 Revenue", url: `${base}/financials-revenue/` },
           { id: "dividends", name: "💸 Dividends", url: `${base}/financials-dividends/` },
         ];
       }
 
-      function buildPackageTargets(exchangeCode, ticker) {
-        const sa = saBaseUrl(exchangeCode, ticker);
-        const tv = `https://www.tradingview.com/symbols/${tvSymbol(exchangeCode, ticker)}`;
+      function buildStockAnalysisTargets(exchangeCode, ticker) {
+        const ex = String(exchangeCode).toLowerCase();
+        const tk = String(ticker).toLowerCase();
+        const baseUrl = saBaseUrl(ex, tk);
         return [
-          { id: "pkg-overview-sa", name: "🏢 Overview — StockAnalysis", url: `${sa}/company` },
-          { id: "pkg-overview-tv", name: "🏢 Overview — TradingView", url: `${tv}/` },
-          { id: "pkg-ratios-tv", name: "📊 Ratios — TradingView", url: `${tv}/financials-statistics-and-ratios/?statistics-period=FQ&selected=price_earnings%2Cprice_book` },
-          { id: "pkg-history-py", name: "⏳ Historical Data — Python (yfinance quarterly closes)", url: "local", local: true },
-          { id: "pkg-income-tv", name: "📑 Income Statement — TradingView", url: `${tv}/financials-income-statement/?statements-period=FQ&selected=total_revenue%2Cnet_income%2Cbasic_shares_outstanding` },
-          { id: "pkg-balance-tv", name: "⚖️ Balance Sheet — TradingView", url: `${tv}/financials-balance-sheet/?statements-period=FQ&selected=total_equity` },
+          { id: "news", name: "📰 Latest News", url: `https://www.google.com/search?q=${ex}:%20${tk}&tbm=nws` },
+          { id: "overview", name: "🏢 Overview", url: `${baseUrl}/company` },
+          { id: "history", name: "⏳ Historical Data", url: `${baseUrl}/history/` },
+          { id: "income", name: "📑 Income Statement", url: `${baseUrl}/financials/income-statement/?p=quarterly` },
+          { id: "balance", name: "⚖️ Balance Sheet", url: `${baseUrl}/financials/balance-sheet/?p=quarterly` },
+          { id: "cash", name: "🔄 Cash Flow", url: `${baseUrl}/financials/cash-flow-statement/?p=quarterly` },
+          { id: "stats", name: "📊 Financial Ratios", url: `${baseUrl}/financials/ratios/?p=quarterly` },
+          { id: "revenue", name: "💰 Revenue", url: `${baseUrl}/financials/metrics/` },
+          { id: "dividends", name: "💸 Dividends", url: `${baseUrl}/dividend/` },
         ];
       }
 
@@ -653,7 +652,7 @@ HTML_PAGE = r'''<!doctype html>
           const a = document.createElement("a");
           a.href = item.local ? "#" : item.url;
           a.target = item.local ? "_self" : "_blank";
-          a.className = item.local ? "link-item is-local" : "link-item";
+          a.className = "link-item";
           a.innerText = item.name;
           if (item.local) { a.addEventListener("click", (e) => { e.preventDefault(); openHistoryTab(exchangeCode, ticker); }); }
           list.appendChild(a);
