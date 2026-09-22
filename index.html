@@ -1086,10 +1086,9 @@
         /* Ticker field */
         if (source === "stockanalysis") {
           e.target.value = e.target.value.toLowerCase();
-        } else if (source === "tradingview") {
+        } else {
           e.target.value = e.target.value.toUpperCase();
         }
-        /* Package mode: keep exactly as typed (each builder normalises) */
       }
 
       exchangeInput.addEventListener("input", handleInputCase);
@@ -1112,7 +1111,7 @@
         /* Ticker casing */
         if (source === "stockanalysis") {
           tickerInput.value = tickerInput.value.toLowerCase();
-        } else if (source === "tradingview") {
+        } else {
           tickerInput.value = tickerInput.value.toUpperCase();
         }
       }

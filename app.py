@@ -402,6 +402,7 @@ HTML_PAGE = r'''<!doctype html>
         checkboxGrid.classList.toggle("is-disabled", isPackage);
         checkboxGrid.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.disabled = isPackage));
         packageNote.style.display = isPackage ? "block" : "none";
+        if (source === "package") { tickerInput.value = tickerInput.value.toUpperCase(); }
         if (source === "stockanalysis") { tickerInput.value = tickerInput.value.toLowerCase(); }
         else if (source === "tradingview") { tickerInput.value = tickerInput.value.toUpperCase(); }
       }
