@@ -1076,18 +1076,14 @@
 
       /* ---------- Input casing behaviour ---------- */
       function handleInputCase(e) {
-        const source = getSelectedSource();
-
         if (e.target.id === "exchange_name") {
           e.target.value = toTitleCase(e.target.value);
           return;
         }
 
         /* Ticker field */
-        if (source === "stockanalysis") {
+        if (e.target.id === "ticker_symbol") {
           e.target.value = e.target.value.toLowerCase();
-        } else {
-          e.target.value = e.target.value.toUpperCase();
         }
       }
 
@@ -1108,12 +1104,7 @@
         /* Show the Package explainer only in Package mode */
         packageNote.style.display = isPackage ? "block" : "none";
 
-        /* Ticker casing */
-        if (source === "stockanalysis") {
-          tickerInput.value = tickerInput.value.toLowerCase();
-        } else {
-          tickerInput.value = tickerInput.value.toUpperCase();
-        }
+        tickerInput.value = tickerInput.value.toLowerCase();
       }
 
       radioButtons.forEach((r) => r.addEventListener("change", updateSourceUI));

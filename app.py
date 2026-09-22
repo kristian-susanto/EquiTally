@@ -388,10 +388,8 @@ HTML_PAGE = r'''<!doctype html>
       }
 
       function handleInputCase(e) {
-        const source = getSelectedSource();
         if (e.target.id === "exchange_name") { e.target.value = toTitleCase(e.target.value); return; }
-        if (source === "stockanalysis") { e.target.value = e.target.value.toLowerCase(); }
-        else if (source === "tradingview") { e.target.value = e.target.value.toUpperCase(); }
+        if (e.target.id === "ticker_symbol") { e.target.value = e.target.value.toLowerCase(); }
       }
       exchangeInput.addEventListener("input", handleInputCase);
       tickerInput.addEventListener("input", handleInputCase);
@@ -402,9 +400,7 @@ HTML_PAGE = r'''<!doctype html>
         checkboxGrid.classList.toggle("is-disabled", isPackage);
         checkboxGrid.querySelectorAll('input[type="checkbox"]').forEach((cb) => (cb.disabled = isPackage));
         packageNote.style.display = isPackage ? "block" : "none";
-        if (source === "package") { tickerInput.value = tickerInput.value.toUpperCase(); }
-        if (source === "stockanalysis") { tickerInput.value = tickerInput.value.toLowerCase(); }
-        else if (source === "tradingview") { tickerInput.value = tickerInput.value.toUpperCase(); }
+        tickerInput.value = tickerInput.value.toLowerCase();
       }
       radioButtons.forEach((r) => r.addEventListener("change", updateSourceUI));
 
