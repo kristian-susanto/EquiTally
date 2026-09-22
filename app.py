@@ -171,12 +171,13 @@ HTML_PAGE = r'''<!doctype html>
           <p class="source-note" id="packageNote">
             <b>Package mode</b> opens a fixed bundle of <b>6 tabs</b>:
             <br />• 🏢 Overview — StockAnalysis &amp; TradingView
-            <br />• ⏳ Historical Data — Python (yfinance quarterly closes)
+            <br />• ⏳ Historical Data — Python (yfinance quarterly / semiannual closes)
             <br />• 📑 Income Statement — TradingView
             <br />• ⚖️ Balance Sheet — TradingView
             <br />• 📊 Ratios — TradingView
           </p>
         </div>
+
         <div style="display: flex; gap: 10px; margin-top: 15px">
           <button class="btn-action btn-primary" style="flex: 2" onclick="processSearch()">Open All Selected Tabs</button>
           <button class="btn-action btn-danger" style="flex: 1" onclick="resetStockForm()">Reset</button>
@@ -317,6 +318,11 @@ HTML_PAGE = r'''<!doctype html>
       const TV_EXCHANGE_MAP = { ETR: "EXTR", SHA: "SSE", SHE: "SZSE", TPE: "TWSE" };
       function toTitleCase(str) { return str.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()); }
       function getSelectedSource() { return document.querySelector('input[name="source"]:checked').value; }
+      // Historical-data frequency now selected inside the popup.
+      // Default = quarterly.
+      function getSelectedFrequency() {
+        return "quarterly";
+      }
       function getSelectedDataPoints() {
         return Array.from(document.querySelectorAll("#checkboxGrid input:checked")).map((cb) => cb.value);
       }
@@ -346,7 +352,7 @@ HTML_PAGE = r'''<!doctype html>
         return [
           { id: "pkg-overview-sa", name: "🏢 Overview — StockAnalysis", url: `${sa}/company` },
           { id: "pkg-overview-tv", name: "🏢 Overview — TradingView", url: `${tv}/` },
-          { id: "pkg-history-py", name: "⏳ Historical Data — Python (yfinance quarterly closes)", url: "local", local: true },
+          { id: "pkg-history-py", name: "⏳ Historical Data — Python (yfinance quarterly / semiannual closes)", url: "local", local: true },
           { id: "pkg-income-tv", name: "📑 Income Statement — TradingView", url: `${tv}/financials-income-statement/?statements-period=FQ&selected=total_revenue%2Cnet_revenue%2Cnet_income%2Cdiluted_shares_outstanding` },
           { id: "pkg-balance-tv", name: "⚖️ Balance Sheet — TradingView", url: `${tv}/financials-balance-sheet/?statements-period=FQ&selected=total_equity` },
           { id: "pkg-ratios-tv", name: "📊 Ratios — TradingView", url: `${tv}/financials-statistics-and-ratios/?statistics-period=FQ&selected=price_earnings%2Cprice_book%2Cnet_margin` },
@@ -417,37 +423,62 @@ HTML_PAGE = r'''<!doctype html>
         if (m === 6) return `1H${y}`;
         if (m === 9) return `9M${y}`;
         if (m === 12) return `FY${y}`;
-        return `${m}M${y}`; // fallback bila bukan quarter-end standar
+        return `${m}M${y}`; // fallback if not a standard quarter-end
       }
 
-      function processQuarterlyData(timestamps, closes) {
-        let quarterData = [];
-        let currentQuarter = null, lastClose = null, prevDate = null;
+      function processPeriodData(timestamps, closes, freq) {
+        // 1) Find latest close (most recent valid trading day)
+        let latest = null;
+        for (let i = timestamps.length - 1; i >= 0; i--) {
+          if (closes[i] === null || closes[i] === undefined) continue;
+          const d = new Date(timestamps[i] * 1000);
+          latest = {
+            date: d.toISOString().split("T")[0],
+            close: closes[i],
+          };
+          break;
+        }
+
+        // 2) Group by period (quarterly or semiannual), keep last close per period
+        const grouped = {};
+        const order = [];
         for (let i = 0; i < timestamps.length; i++) {
           if (closes[i] === null || closes[i] === undefined) continue;
-          const date = new Date(timestamps[i] * 1000);
-          const year = date.getFullYear();
-          const month = date.getMonth();
-          const quarter = Math.floor(month / 3) + 1;
-          const qKey = `${year}-Q${quarter}`;
-          const dateStr = date.toISOString().split("T")[0];
-          if (currentQuarter !== qKey) {
-            if (currentQuarter !== null && lastClose !== null) {
-              quarterData.push({ date: prevDate, close: lastClose, period: getPeriodLabel(prevDate) });
-            }
-            currentQuarter = qKey;
+          const d = new Date(timestamps[i] * 1000);
+          const y = d.getFullYear();
+          const m = d.getMonth(); // 0-11
+
+          let key;
+          if (freq === "semiannual") {
+            // Keep only June (index 5) and December (index 11)
+            if (m !== 5 && m !== 11) continue;
+            key = `${y}-H${m === 5 ? 1 : 2}`;
+          } else {
+            // Quarterly
+            key = `${y}-Q${Math.floor(m / 3) + 1}`;
           }
-          lastClose = closes[i];
-          prevDate = dateStr;
+
+          if (!grouped[key]) order.push(key);
+          grouped[key] = {
+            date: d.toISOString().split("T")[0],
+            close: closes[i],
+            period: getPeriodLabel(d.toISOString().split("T")[0]),
+          };
         }
-        if (currentQuarter !== null && lastClose !== null) {
-          quarterData.push({ date: prevDate, close: lastClose, period: getPeriodLabel(prevDate) });
-        }
-        quarterData.sort((a, b) => new Date(b.date) - new Date(a.date));
-        return quarterData;
+
+        const periodData = order.map((k) => grouped[k]);
+        // 3) Sort newest → oldest
+        periodData.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        return { latest, periodData };
       }
 
-      async function openHistoryTab(exchangeCode, ticker) {
+      async function openHistoryTab(exchangeCode, ticker, initialFreq) {
+        let freq = (initialFreq === "semiannual") ? "semiannual" : "quarterly";
+        let cachedTimestamps = null;
+        let cachedCloses = null;
+        let cachedSymbol = null;
+
         const newTab = window.open("", "_blank");
         if (!newTab) {
           Swal.fire(getToastConfig("error", "Popup blocked! Please allow popups for this site."));
@@ -459,27 +490,29 @@ HTML_PAGE = r'''<!doctype html>
         const symbol = ticker.toUpperCase() + suffix;
         const proxyUrl = `/proxy?symbol=${encodeURIComponent(symbol)}&range=10y&interval=1d`;
 
-        try {
-          const response = await fetch(proxyUrl);
-          if (!response.ok) {
-            const errText = await response.text();
-            throw new Error(`Server returned ${response.status}: ${errText.slice(0, 200)}`);
+        // ── Build the full popup page HTML for current `freq` ─────────
+        function buildPageHtml() {
+          const freqTitle = freq === "semiannual" ? "Semiannual" : "Quarter-End";
+          const { latest, periodData } = processPeriodData(cachedTimestamps, cachedCloses, freq);
+          if (!periodData || periodData.length === 0) {
+            return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>No Data</title></head>
+              <body style="font-family:system-ui;padding:40px;text-align:center;background:#f1f5f9;color:#1e293b">
+              <h2 style="color:#ef4444">No ${freqTitle.toLowerCase()} data available for this ticker.</h2>
+              <p>Try switching to the other frequency.</p>
+              <div style="margin-top:20px">
+                <button data-freq="quarterly" style="padding:10px 18px;margin:4px;border:none;border-radius:8px;background:#2563eb;color:#fff;font-weight:700;cursor:pointer">Quarterly</button>
+                <button data-freq="semiannual" style="padding:10px 18px;margin:4px;border:none;border-radius:8px;background:#2563eb;color:#fff;font-weight:700;cursor:pointer">Semiannual</button>
+              </div></body></html>`;
           }
-          const data = await response.json();
-          if (!data.chart || !data.chart.result || data.chart.result.length === 0) {
-            throw new Error("No data found for this ticker symbol.");
-          }
-          const result = data.chart.result[0];
-          const timestamps = result.timestamp;
-          const closes = result.indicators.quote[0].close;
-          if (!timestamps || !closes) throw new Error("Incomplete data received.");
-          const quarterData = processQuarterlyData(timestamps, closes);
-          if (quarterData.length === 0) throw new Error("No quarterly data available.");
 
           const fmtClose = (v) =>
             v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-          const html = `<!DOCTYPE html>
+          const latestDateCell = latest ? latest.date : "—";
+          const latestCloseCell = latest ? fmtClose(latest.close) : "—";
+          const latestHeader = latest ? latest.date : "—";
+
+          return `<!DOCTYPE html>
             <html lang="en">
             <head>
             <meta charset="UTF-8" />
@@ -510,54 +543,64 @@ HTML_PAGE = r'''<!doctype html>
               .header{background:var(--primary); color:#fff; padding:22px 18px; text-align:center}
               .header h1{margin:0; font-size:clamp(1.05rem,3.4vw,1.5rem); font-weight:800; word-break:break-word}
               .header p{margin:6px 0 0; font-size:clamp(.74rem,2.4vw,.9rem); opacity:.88}
+
+              /* ── Frequency toggle inside popup ── */
+              .freq-switch{
+                display:inline-flex; gap:4px; margin-top:14px;
+                background:rgba(255,255,255,0.16); padding:4px; border-radius:10px;
+              }
+              .freq-btn{
+                padding:8px 16px; border:none; border-radius:8px; background:transparent;
+                color:#fff; font-weight:700; font-size:0.82rem; cursor:pointer;
+                transition: all .2s ease; letter-spacing:.2px;
+              }
+              .freq-btn:hover{ background:rgba(255,255,255,0.18); }
+              .freq-btn.active{ background:#fff; color:var(--primary); }
+
               .table-wrap{width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
               table{border-collapse:collapse; width:100%; min-width:max-content}
-
               th,td{
                 padding: 8px 10px; border-bottom:1px solid var(--border); white-space:nowrap;
                 font-variant-numeric:tabular-nums;
               }
-
               thead th{
                 background:var(--stripe); color:var(--muted);
-                font-size: 0.75rem;
-                font-weight:700; letter-spacing:.4px;
+                font-size: 0.75rem; font-weight:700; letter-spacing:.4px;
                 text-transform:uppercase; text-align:center;
                 position:sticky; top:0; z-index:3;
               }
-
               thead th:first-child{
-                left:0; z-index:4;
-                text-align:left; padding-left: 12px;
-                font-size: 0.75rem; 
-                font-weight:700;
+                left:0; z-index:4; text-align:left; padding-left: 12px;
+                font-size: 0.75rem; font-weight:700;
                 text-transform:uppercase; color:var(--muted); letter-spacing:.4px;
               }
-
               thead th.period-value{
-                text-align:center;
-                color:var(--text);
-                font-size: 0.8rem; 
-                font-weight:600;
-                letter-spacing:0;
-                text-transform:none;
+                text-align:center; color:var(--text);
+                font-size: 0.8rem; font-weight:600;
+                letter-spacing:0; text-transform:none;
               }
-
+              thead th.latest-head{
+                background: var(--stripe); color: var(--muted);
+                border-bottom: 1px solid var(--border);
+                text-transform: uppercase; font-size: 0.75rem;
+                font-weight: 700; letter-spacing:.4px;
+              }
+              tbody td.latest-cell{
+                background: transparent;
+                font-weight: 600;
+                color: var(--text);
+              }
               tbody th{
                 position:sticky; left:0; z-index:2; background:var(--stripe); text-align:left;
-                font-size: 0.75rem;
-                font-weight:700; color:var(--muted);
+                font-size: 0.75rem; font-weight:700; color:var(--muted);
                 text-transform:uppercase; letter-spacing:.4px;
-                border-right:1px solid var(--border);
-                padding-left: 12px;
+                border-right:1px solid var(--border); padding-left: 12px;
               }
-              
               tbody td{
-                text-align:center; font-size: 0.85rem; font-weight:600; 
-                color:var(--text);
+                text-align:center; font-size: 0.85rem; font-weight:600; color:var(--text);
               }
-
               tbody tr:hover td{background:var(--hover)}
+              tbody tr:hover td.latest-cell{background: var(--hover);}
               tbody tr:last-child th, tbody tr:last-child td{border-bottom:none}
               .foot{padding:14px 18px; font-size:.75rem; color:var(--muted); text-align:center; line-height:1.6}
 
@@ -568,6 +611,7 @@ HTML_PAGE = r'''<!doctype html>
                 thead th, thead th:first-child, tbody th{ font-size:0.65rem; }
                 thead th.period-value, tbody td{ font-size:0.75rem; }
                 .foot{font-size:.65rem; padding:10px}
+                .freq-btn{ padding:6px 12px; font-size:0.72rem; }
               }
             </style>
             </head>
@@ -575,35 +619,75 @@ HTML_PAGE = r'''<!doctype html>
               <div class="container">
                 <div class="header">
                   <h1>${symbol} — Historical Data</h1>
-                  <p>Quarter-End Closing Prices &middot; Last 10 Years &middot; Newest First</p>
+                  <p>${freqTitle} Closing Prices &middot; Last 10 Years &middot; Newest First &middot; Includes Latest Close</p>
+                  <div class="freq-switch">
+                    <button data-freq="quarterly" class="freq-btn ${freq === "quarterly" ? "active" : ""}">Quarterly</button>
+                    <button data-freq="semiannual" class="freq-btn ${freq === "semiannual" ? "active" : ""}">Semiannual</button>
+                  </div>
                 </div>
                 <div class="table-wrap">
                   <table>
                     <thead>
                       <tr>
                         <th scope="col">Period</th>
-                        ${quarterData.map((d) => `<th scope="col" class="period-value">${d.period}</th>`).join("")}
+                        <th scope="col" class="period-value">Latest</th>
+                        ${periodData.map((d) => `<th scope="col" class="period-value">${d.period}</th>`).join("")}
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
-                        <th scope="row">Quarter-End</th>
-                        ${quarterData.map((d) => `<td>${d.date}</td>`).join("")}
+                        <th scope="row">Actual Date</th>
+                        <td class="latest-cell">${latestDateCell}</td>
+                        ${periodData.map((d) => `<td>${d.date}</td>`).join("")}
                       </tr>
                       <tr>
                         <th scope="row">Close Price</th>
-                        ${quarterData.map((d) => `<td>${fmtClose(d.close)}</td>`).join("")}
+                        <td class="latest-cell">${latestCloseCell}</td>
+                        ${periodData.map((d) => `<td>${fmtClose(d.close)}</td>`).join("")}
                       </tr>
                     </tbody>
                   </table>
                 </div>
-                <p class="foot">Swipe horizontally to view every quarter. All figures are quarter-end closing prices in the listing currency.</p>
+                <p class="foot">Swipe horizontally to view every period. All figures are period-end closing prices in the listing currency. The <b>Latest</b> column shows the most recent trading day close (${latestHeader}).</p>
               </div>
             </body>
             </html>`;
+        }
+
+        // Paint the popup and re-attach toggle handlers
+        function paint() {
           newTab.document.open();
-          newTab.document.write(html);
+          newTab.document.write(buildPageHtml());
           newTab.document.close();
+          // Re-attach click handlers to the toggle buttons
+          newTab.document.querySelectorAll("[data-freq]").forEach((btn) => {
+            btn.addEventListener("click", (e) => {
+              e.preventDefault();
+              const f = btn.getAttribute("data-freq");
+              if (f === freq) return;
+              freq = f;
+              paint();
+            });
+          });
+        }
+
+        try {
+          const response = await fetch(proxyUrl);
+          if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(`Server returned ${response.status}: ${errText.slice(0, 200)}`);
+          }
+          const data = await response.json();
+          if (!data.chart || !data.chart.result || data.chart.result.length === 0) {
+            throw new Error("No data found for this ticker symbol.");
+          }
+          const result = data.chart.result[0];
+          cachedTimestamps = result.timestamp;
+          cachedCloses = result.indicators.quote[0].close;
+          if (!cachedTimestamps || !cachedCloses) throw new Error("Incomplete data received.");
+          cachedSymbol = symbol;
+
+          paint();
         } catch (error) {
           console.error("Error fetching history:", error);
           newTab.document.open();
@@ -629,6 +713,7 @@ HTML_PAGE = r'''<!doctype html>
         const rawExchange = exchangeInput.value.trim();
         const ticker = tickerInput.value.trim();
         const source = getSelectedSource();
+        const freq = "quarterly"; // default; user can switch inside the popup
         if (!rawExchange || !ticker) {
           Swal.fire(getToastConfig("error", "Exchange & Ticker code specifications are required!"));
           return;
@@ -658,10 +743,12 @@ HTML_PAGE = r'''<!doctype html>
           a.target = item.local ? "_self" : "_blank";
           a.className = "link-item";
           a.innerText = item.name;
-          if (item.local) { a.addEventListener("click", (e) => { e.preventDefault(); openHistoryTab(exchangeCode, ticker); }); }
+          if (item.local) {
+            a.addEventListener("click", (e) => { e.preventDefault(); openHistoryTab(exchangeCode, ticker, freq); });
+          }
           list.appendChild(a);
           setTimeout(() => {
-            if (item.local) { openHistoryTab(exchangeCode, ticker); }
+            if (item.local) { openHistoryTab(exchangeCode, ticker, freq); } // ── pass freq
             else { window.open(item.url, "_blank"); }
           }, index * 350);
         });

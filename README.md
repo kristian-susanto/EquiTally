@@ -66,7 +66,8 @@ Designed for investors, traders, and financial analysts to eliminate repetitive 
 - **Granular Data Point Filtering:** Choose precisely which dimensions to investigate (e.g., Latest News, Financial Ratios, Historical Trends, Balance Sheets, Income Statements, Cash Flow Metrics, or Dividend Trackers).
 - **Triple Data Source Support:** Switch the structural parsing logic between **Package**, **StockAnalysis**, or **TradingView** environments depending on your data pipeline preferences.
 - **Package Mode (Default):** A one-click bundled workflow that ignores the granular checklist and launches a fixed set of **6 analytical tabs** in a single action — combining StockAnalysis, TradingView, and a locally rendered historical data view.
-- **Local Historical Data View:** The ⏳ **Historical Data** tab is rendered on the fly by the Flask backend. It queries Yahoo Finance quarterly closes (10 years) and displays them in a **transposed, responsive table** with three rows: a **Period** header row (`1Q`, `1H`, `9M`, `FY` labels), a **Quarter-End** row with the actual date, and a **Close Price** row. All three value rows are aligned to their respective periods, with a sticky first column for easy horizontal scrolling.
+- **Local Historical Data View:** The ⏳ **Historical Data** tab is rendered on the fly by the Flask backend. It queries Yahoo Finance daily closes (10 years), reduces them to period-end closes, and displays them in a **transposed, responsive table** with a **Latest Close** column always shown first (leftmost), followed by period columns. The tab includes an **in-popup Quarterly / Semiannual toggle** so the user can switch reporting frequency without returning to the main page.
+- **In-Popup Frequency Toggle:** The Historical Data popup carries its own **Quarterly** (default) and **Semiannual** toggle in the header. Clicking either button re-renders the table instantly using the already-cached daily data — no additional network request is issued.
 - **Context-Aware Keyboard Shortcut:** Pressing `Enter` inside the Exchange Name field, Ticker Symbol field, or any radio option immediately triggers the research pipeline — no need to move your mouse to the button.
 - **Fail-Safe Manual Backup Registry:** Embedded link presentation tier ensures that if a modern browser blocks multi-popups, backup clickable links render seamlessly to bypass security restrictions.
 
@@ -121,16 +122,16 @@ The Stock Multi-Tab Researcher supports three distinct data-source modes, select
 
 When **Package** is selected (the default), the data-point checklist is dimmed and disabled, and clicking **Open All Selected Tabs** immediately launches the following six analytical views:
 
-| #   | Data Point          | Provider                      | Purpose                                                     |
-| --- | ------------------- | ----------------------------- | ----------------------------------------------------------- |
-| 1   | 🏢 Overview         | StockAnalysis                 | Company profile, sector, business summary                   |
-| 2   | 🏢 Overview         | TradingView                   | Company profile, sector, business summary                   |
-| 3   | 📊 Ratios           | TradingView                   | Quarterly statistics and valuation ratios                   |
-| 4   | ⏳ Historical Data  | Local (Flask + Yahoo Finance) | Quarter-end closing prices, last 10 years, transposed table |
-| 5   | 📑 Income Statement | TradingView                   | Quarterly income statement                                  |
-| 6   | ⚖️ Balance Sheet    | TradingView                   | Quarterly balance sheet                                     |
+| #   | Data Point          | Provider                      | Purpose                                                        |
+| --- | ------------------- | ----------------------------- | -------------------------------------------------------------- |
+| 1   | 🏢 Overview         | StockAnalysis                 | Company profile, sector, business summary                      |
+| 2   | 🏢 Overview         | TradingView                   | Company profile, sector, business summary                      |
+| 3   | 📑 Income Statement | TradingView                   | Quarterly income statement                                     |
+| 4   | ⚖️ Balance Sheet    | TradingView                   | Quarterly balance sheet                                        |
+| 5   | 📊 Ratios           | TradingView                   | Quarterly statistics and valuation ratios                      |
+| 6   | ⏳ Historical Data  | Local (Flask + Yahoo Finance) | Latest close + Quarterly / Semiannual closes over the last 10y |
 
-Package mode is intentionally unconfigurable — it is a fixed reconnaissance bundle designed so that switching between providers is not necessary when you simply want comprehensive coverage of a ticker. The locally rendered **Historical Data** tab is unique to Package mode and is opened via a client-side fetch to the Flask `/proxy` endpoint.
+Package mode is intentionally unconfigurable on the main page — it is a fixed reconnaissance bundle designed so that switching between providers is not necessary when you simply want comprehensive coverage of a ticker. The locally rendered **Historical Data** tab is unique to Package mode and is opened via a client-side fetch to the Flask `/proxy` endpoint. Frequency (Quarterly vs. Semiannual) is chosen **inside the popup**, not on the main page.
 
 ### Local Historical Data Tab
 
@@ -138,25 +139,51 @@ When the ⏳ **Historical Data** target is executed (only available inside Packa
 
 1. Resolves the ticker to a Yahoo Finance symbol using the exchange suffix map (e.g., `IDX → .JK`, `HKG → .HK`, `TYO → .T`).
 2. Calls the Flask `/proxy?symbol=…&range=10y&interval=1d` endpoint, which forwards the request to Yahoo Finance with a desktop User-Agent header.
-3. Parses the returned daily closes and reduces them to **quarter-end closing prices** (one data point per calendar quarter).
-4. Renders a **transposed, responsive table** with three stacked rows:
+3. Caches the returned daily closes in memory — the data is fetched **once per popup**.
+4. Reduces the daily data to **period-end closing prices** based on the currently selected frequency:
+   - **Quarterly (default)** — one data point per calendar quarter (Mar / Jun / Sep / Dec).
+   - **Semiannual** — one data point per half-year, keeping only **June** and **December** closes.
+5. Renders a **transposed, responsive table** with a **Latest Close** column always shown first (leftmost), followed by the most recent period column to the right:
 
-   | **Period**      | 9M2026     | 1H2026     | 1Q2026     | FY2025     | 9M2025     | 1H2025     | 1Q2025     |
-   | --------------- | ---------- | ---------- | ---------- | ---------- | ---------- | ---------- | ---------- |
-   | **Quarter-End** | 2026-09-18 | 2026-06-30 | 2026-03-31 | 2025-12-30 | 2025-09-30 | 2025-06-30 | 2025-03-27 |
-   | **Close Price** | 6,300.00   | 5,550.00   | 6,450.00   | 8,075.00   | 7,625.00   | 8,675.00   | 8,500.00   |
-   - **Row 1 — Period (header):** Compact labels derived from the quarter-end month:
+   | **Period**      | **Latest** | 9M2026     | 1H2026     | 1Q2026     | FY2025     | 9M2025     | 1H2025     | 1Q2025     |
+   | --------------- | ---------- | ---------- | ---------- | ---------- | ---------- | ---------- | ---------- | ---------- |
+   | **Actual Date** | 2026-09-22 | 2026-09-18 | 2026-06-30 | 2026-03-31 | 2025-12-30 | 2025-09-30 | 2025-06-30 | 2025-03-27 |
+   | **Close Price** | 6,200.00   | 6,300.00   | 5,550.00   | 6,450.00   | 8,075.00   | 7,625.00   | 8,675.00   | 8,500.00   |
+   - **Latest column:** Shows the most recent trading day's actual date and close. Styled identically to every other column (same stripe header, same border, same font weight) so the table reads as one uniform grid.
+   - **Row 1 — Period (header):** Compact labels derived from the period-end month:
      - March → `1Q<year>` (e.g., `1Q2026`)
      - June → `1H<year>` (e.g., `1H2026`)
      - September → `9M<year>` (e.g., `9M2026`)
      - December → `FY<year>` (e.g., `FY2025`)
-   - **Row 2 — Quarter-End:** Actual trading date of the quarter-end close.
-   - **Row 3 — Close Price:** Quarter-end closing price in the listing currency.
-   - The leftmost **Period / Quarter-End / Close Price** label column is **sticky**, so it stays visible while scrolling horizontally.
-   - The **Period** label uses the same font size and weight as **Quarter-End** and **Close Price** so all three value rows look visually consistent.
+   - **Row 2 — Actual Date:** Actual trading date of the period-end close (or the latest trading day for the _Latest_ column).
+   - **Row 3 — Close Price:** Period-end closing price in the listing currency.
+   - The leftmost **Period / Actual Date / Close Price** label column is **sticky**, so it stays visible while scrolling horizontally.
+   - The **Period** header uses the same font size and weight as the other column headers so all columns look visually consistent.
    - The table uses a 💼 favicon, matches the global light/dark theme via `prefers-color-scheme`, and adapts its padding/typography on mobile screens.
 
-If a ticker is invalid or Yahoo Finance returns no data, the tab renders a friendly error card instead of the table.
+### In-Popup Frequency Toggle
+
+The Historical Data popup carries its own frequency selector in the blue header, positioned below the title:
+
+```
+┌──────────────────────────────────────────────────────┐
+│  BBCA.JK — Historical Data                           │
+│  Quarter-End Closing Prices · Last 10 Years · …      │
+│  ┌───────────┬────────────┐                          │
+│  │ Quarterly │ Semiannual │  ← click to switch       │
+│  └───────────┴────────────┘                          │
+└──────────────────────────────────────────────────────┘
+```
+
+- **Quarterly** is active by default and displays every quarter-end close.
+- Clicking **Semiannual** immediately re-renders the table to show only June and December closes.
+- The switch is **instant and offline** — no additional request to Flask or Yahoo Finance is made. The popup keeps the original daily closes cached in memory and simply re-runs the period-grouping logic.
+- The active button is highlighted white against the blue header; the inactive button blends into the header background.
+- Users may toggle back and forth freely without ever returning to the main EquiTally page.
+
+The **main page** intentionally does _not_ expose a frequency selector. Package mode always opens the popup in **Quarterly** mode, and the user changes it from inside the popup if desired.
+
+If a ticker is invalid, Yahoo Finance returns no data, or a selected frequency produces no rows, the tab renders a friendly error card (including a Quarterly / Semiannual fallback switch) instead of the table.
 
 ---
 
@@ -292,6 +319,7 @@ The console will print the EquiTally banner and the exact URL for convenience.
 5. **Execute Research Tabs:** Click **Open All Selected Tabs** — or simply press `Enter` while focused on the Exchange Name, Ticker Symbol, or a radio option.
    - _Note on Security Blocks:_ If the tabs do not open immediately, check your browser's address bar for a "Pop-up Blocked" icon, select "Always allow pop-ups from this source," and retry. Alternatively, use the manually generated reference panel that appears below the controls.
    - _Note on the Historical Data tab:_ Because the historical view is fetched from your local Flask server, it must run from `http://localhost:5000` (or your deployed host). Opening the HTML file directly from the filesystem will disable the proxy call.
+6. **Switch Frequency Inside the Historical Data Tab (optional):** Once the ⏳ **Historical Data** popup is open, use the **Quarterly** / **Semiannual** buttons in the blue header to switch how period closes are grouped. The table re-renders instantly with no additional network request. The **Latest** column always remains the leftmost column.
 
 ### Step 3: Operating the Click Counter
 
@@ -323,6 +351,8 @@ The console will print the EquiTally banner and the exact URL for convenience.
 | `Enter`                       | Focused button                                   | Activates that specific button                                  |
 | `Enter`                       | Inside any textarea                              | Inserts a new line (default browser behaviour)                  |
 | `Ctrl + R` / `Cmd + R` / `F5` | Anywhere                                         | Blocked — refresh is intercepted to protect click-counter state |
+
+> **Note:** Inside the Historical Data popup, use the mouse (or a screen-reader click) on the **Quarterly** / **Semiannual** buttons to switch frequency. The keyboard `Enter` interception only applies to the main EquiTally page.
 
 ---
 
@@ -443,7 +473,9 @@ You can easily modify the tool to suit your needs by editing the source files:
 - **Multipliers** – Adjust the `MULT` object if you need different scaling factors.
 - **Placeholder text** – Update the `placeholder` attributes on the textareas.
 - **Styling** – All CSS is embedded in the `<style>` block inside `HTML_PAGE`; feel free to tweak colors, fonts, or layout.
-- **Historical table layout** – The transposed Historical Data table (Period / Quarter-End / Close Price) is generated inside `openHistoryTab()` in `app.py`. Adjust the period-label logic in `getPeriodLabel()` or the row order in the HTML template to change its structure.
+- **Historical table layout** – The transposed Historical Data table (Period / Actual Date / Close Price, with a _Latest_ column first) is generated inside `openHistoryTab()` in `app.py`. Adjust the period-label logic in `getPeriodLabel()` or the row order in the HTML template to change its structure.
+- **Default historical frequency** – The popup opens in **Quarterly** mode by default. To change the default, modify the `let freq = (initialFreq === "semiannual") ? "semiannual" : "quarterly";` line at the top of `openHistoryTab()`, or change the value passed in `processSearch()` (`const freq = "quarterly";`).
+- **Quarterly / Semiannual grouping logic** – Both frequencies are handled inside `processPeriodData(timestamps, closes, freq)`. To add a new frequency (e.g., monthly), extend this function and add a corresponding button in the popup header.
 - **Package tab delay** – Adjust the `350` millisecond timeout inside `processSearch()` to change the delay between opening bundled Package tabs.
 - **Proxy timeout** – The `/proxy` route uses a 15-second timeout to Yahoo Finance; adjust as needed for slower networks.
 
@@ -466,19 +498,21 @@ For older browsers, the fallback copy method may work, but BigInt support is ess
 
 ### Troubleshooting
 
-| Issue                                          | Possible Cause                               | Solution                                                                                                                                                                   |
-| ---------------------------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Copy button does nothing                       | Browser blocks clipboard access              | Use a secure context (HTTPS or localhost) or copy manually from the output textarea.                                                                                       |
-| Values not pasting horizontally                | Spreadsheet settings                         | Ensure you paste into a single cell and that the tab character is preserved. Some apps may convert tabs to spaces.                                                         |
-| Wrong number of columns                        | Input contains unrecognised lines            | Check the stats indicator (e.g., "8 converted · 8 skipped"). Unrecognised lines are silently ignored.                                                                      |
-| Reverse order not working                      | Checkbox state                               | Make sure the checkbox is checked if you need reversed output.                                                                                                             |
-| Large numbers lose precision                   | JavaScript number limitations                | The tool uses BigInt, so precision is maintained. If you see incorrect values, ensure you are using a modern browser.                                                      |
-| `Enter` does not trigger search                | Focused inside a `<textarea>`                | Textareas (ZeroShift, Text Case Converter) intentionally keep native newline behaviour. Move focus to the Exchange/Ticker field.                                           |
-| Package mode launched too few tabs             | Fixed bundle of 6 tabs is expected           | This is by design. Switch to StockAnalysis or TradingView mode if you prefer granular checklist control.                                                                   |
-| Historical Data tab shows error                | Flask `/proxy` unreachable or ticker invalid | Ensure `python app.py` is running and the page is loaded from `http://localhost:5000`. Verify the ticker and exchange code.                                                |
-| Historical Data favicon still shows old emoji  | Browser favicon cache                        | Perform a hard refresh (`Ctrl + F5` / `Cmd + Shift + R`) or open the tab in an incognito window.                                                                           |
-| Historical table dates not aligned with prices | Horizontal scrolling is expected             | The table is intentionally transposed. The leftmost label column (`Period` / `Quarter-End` / `Close Price`) stays sticky on the left while you scroll to compare quarters. |
-| Period row font looks inconsistent             | Browser cache                                | Perform a hard refresh (`Ctrl + F5` / `Cmd + Shift + R`). The `Period` label uses the same size as `Quarter-End` and `Close Price` by design.                              |
+| Issue                                          | Possible Cause                               | Solution                                                                                                                                                                  |
+| ---------------------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Copy button does nothing                       | Browser blocks clipboard access              | Use a secure context (HTTPS or localhost) or copy manually from the output textarea.                                                                                      |
+| Values not pasting horizontally                | Spreadsheet settings                         | Ensure you paste into a single cell and that the tab character is preserved. Some apps may convert tabs to spaces.                                                        |
+| Wrong number of columns                        | Input contains unrecognised lines            | Check the stats indicator (e.g., "8 converted · 8 skipped"). Unrecognised lines are silently ignored.                                                                     |
+| Reverse order not working                      | Checkbox state                               | Make sure the checkbox is checked if you need reversed output.                                                                                                            |
+| Large numbers lose precision                   | JavaScript number limitations                | The tool uses BigInt, so precision is maintained. If you see incorrect values, ensure you are using a modern browser.                                                     |
+| `Enter` does not trigger search                | Focused inside a `<textarea>`                | Textareas (ZeroShift, Text Case Converter) intentionally keep native newline behaviour. Move focus to the Exchange/Ticker field.                                          |
+| Package mode launched too few tabs             | Fixed bundle of 6 tabs is expected           | This is by design. Switch to StockAnalysis or TradingView mode if you prefer granular checklist control.                                                                  |
+| Historical Data tab shows error                | Flask `/proxy` unreachable or ticker invalid | Ensure `python app.py` is running and the page is loaded from `http://localhost:5000`. Verify the ticker and exchange code.                                               |
+| Historical Data favicon still shows old emoji  | Browser favicon cache                        | Perform a hard refresh (`Ctrl + F5` / `Cmd + Shift + R`) or open the tab in an incognito window.                                                                          |
+| Historical table dates not aligned with prices | Horizontal scrolling is expected             | The table is intentionally transposed. The leftmost label column (`Period` / `Actual Date` / `Close Price`) stays sticky on the left while you scroll to compare periods. |
+| Quarterly / Semiannual toggle not visible      | Browser cached the old popup template        | Perform a hard refresh (`Ctrl + F5` / `Cmd + Shift + R`) on the main page before reopening the popup. The toggle lives inside the blue popup header.                      |
+| Semiannual mode shows fewer rows than expected | Only June & December are kept                | This is by design — Semiannual mode keeps exactly the two half-year ends per year (June and December).                                                                    |
+| Latest column style looks different            | Browser cache                                | Perform a hard refresh (`Ctrl + F5` / `Cmd + Shift + R`). The Latest column is styled identically to all other columns in the current release.                            |
 
 ---
 
@@ -486,8 +520,8 @@ For older browsers, the fallback copy method may work, but BigInt support is ess
 
 - **Flask (Python) Backend:** `app.py` serves the single-file frontend via `render_template_string` and exposes a `/proxy` endpoint that forwards requests to Yahoo Finance for historical price data. This is the only server-side component.
 - **HTML5 Elements:** Structured content layout separating input contexts from interactive control modules.
-- **CSS3 Variables & Responsive Design:** Centralized color variables handle real-time theme swapping, while a mobile-first layout engine guarantees responsive adaptations — including the transposed, horizontally scrollable Historical Data table (Period / Quarter-End / Close Price rows).
-- **Vanilla JavaScript (ES6+):** Manages local caching layers, handles typography transformations, monitors tracking variables, maps data parameters into targeted financial URL strings, and renders the local Historical Data tab (including the period-label derivation logic).
+- **CSS3 Variables & Responsive Design:** Centralized color variables handle real-time theme swapping, while a mobile-first layout engine guarantees responsive adaptations — including the transposed, horizontally scrollable Historical Data table (Period / Actual Date / Close Price rows with a leading _Latest_ column).
+- **Vanilla JavaScript (ES6+):** Manages local caching layers, handles typography transformations, monitors tracking variables, maps data parameters into targeted financial URL strings, and renders the local Historical Data tab (including the period-label derivation logic, the in-popup Quarterly / Semiannual toggle, and the cached daily-close dataset).
 - **SweetAlert2 Library Integration:** Leveraged for modern, non-blocking toast popups and validation dialogs that automatically match the selected system theme.
 - **BigInt Arithmetic:** Used by EquiTally's Financial Shorthand Converter for exact financial suffix conversion without floating-point precision loss.
 - **Clipboard API Integration:** Enables one-click copy operations across EquiTally, with fallback support where needed.
