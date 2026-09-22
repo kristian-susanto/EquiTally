@@ -507,7 +507,7 @@ HTML_PAGE = r'''<!doctype html>
                 -webkit-text-size-adjust:100%;
               }
               .container{
-                max-width:1100px; margin:0 auto; background:var(--card); border-radius:14px;
+                max-width: 98%; margin: 0 auto; background:var(--card); border-radius:14px;
                 box-shadow:0 10px 25px -5px rgba(0,0,0,.15); overflow:hidden;
               }
               .header{background:var(--primary); color:#fff; padding:22px 18px; text-align:center}
@@ -517,28 +517,30 @@ HTML_PAGE = r'''<!doctype html>
               table{border-collapse:collapse; width:100%; min-width:max-content}
 
               th,td{
-                padding:14px 22px; border-bottom:1px solid var(--border); white-space:nowrap;
+                padding: 8px 10px; border-bottom:1px solid var(--border); white-space:nowrap;
                 font-variant-numeric:tabular-nums;
               }
 
               thead th{
                 background:var(--stripe); color:var(--muted);
-                font-size:.8rem; font-weight:700; letter-spacing:.4px;
+                font-size: 0.75rem;
+                font-weight:700; letter-spacing:.4px;
                 text-transform:uppercase; text-align:center;
                 position:sticky; top:0; z-index:3;
               }
 
               thead th:first-child{
                 left:0; z-index:4;
-                text-align:left; padding-left:22px;
-                font-size:.8rem; font-weight:700;
+                text-align:left; padding-left: 12px;
+                font-size: 0.75rem; 
+                font-weight:700;
                 text-transform:uppercase; color:var(--muted); letter-spacing:.4px;
               }
 
               thead th.period-value{
                 text-align:center;
                 color:var(--text);
-                font-size:.9rem;
+                font-size: 0.8rem; 
                 font-weight:600;
                 letter-spacing:0;
                 text-transform:none;
@@ -546,24 +548,29 @@ HTML_PAGE = r'''<!doctype html>
 
               tbody th{
                 position:sticky; left:0; z-index:2; background:var(--stripe); text-align:left;
-                font-size:.8rem; font-weight:700; color:var(--muted);
+                font-size: 0.75rem;
+                font-weight:700; color:var(--muted);
                 text-transform:uppercase; letter-spacing:.4px;
                 border-right:1px solid var(--border);
+                padding-left: 12px;
               }
-              tbody td{text-align:center; font-size:.9rem; font-weight:600; color:var(--text)}
+              
+              tbody td{
+                text-align:center; font-size: 0.85rem; font-weight:600; 
+                color:var(--text);
+              }
 
               tbody tr:hover td{background:var(--hover)}
               tbody tr:last-child th, tbody tr:last-child td{border-bottom:none}
               .foot{padding:14px 18px; font-size:.75rem; color:var(--muted); text-align:center; line-height:1.6}
 
               @media (max-width:600px){
-                body{padding:12px 8px 30px}
-                .header{padding:18px 12px}
-                th,td{padding:10px 14px}
-                thead th, thead th:first-child, tbody th{ font-size:.72rem; }
-                thead th.period-value, tbody td{ font-size:.82rem; }
-                thead th:first-child{padding-left:14px}
-                .foot{font-size:.7rem; padding:12px}
+                body{padding:10px 5px 20px}
+                .header{padding:15px 10px}
+                th,td{padding:6px 8px}
+                thead th, thead th:first-child, tbody th{ font-size:0.65rem; }
+                thead th.period-value, tbody td{ font-size:0.75rem; }
+                .foot{font-size:.65rem; padding:10px}
               }
             </style>
             </head>
