@@ -192,6 +192,7 @@ HTML_PAGE = r'''<!doctype html>
           <div class="counter-display" id="counter-value">0</div>
           <div class="counter-buttons">
             <button class="btn-action btn-primary" id="click-btn" style="flex: 2">CLICK HERE</button>
+            <button class="btn-action btn-ghost" id="decrement-btn" style="flex: 1; font-size: 20px; font-weight: 800" title="Decrement by 1">−</button>
             <button class="btn-action btn-danger" id="reset-counter-btn" style="flex: 1">Reset</button>
           </div>
         </section>
@@ -255,6 +256,7 @@ HTML_PAGE = r'''<!doctype html>
       const counterDisplay = document.getElementById("counter-value");
       const clickBtn = document.getElementById("click-btn");
       const resetCounterBtn = document.getElementById("reset-counter-btn");
+      const decrementBtn = document.getElementById("decrement-btn");
       let count = 0;
 
       const exchanges = [
@@ -777,6 +779,18 @@ HTML_PAGE = r'''<!doctype html>
           color: currentTheme === "dark" ? "#f1f5f9" : "#1e293b" }).then((result) => {
           if (result.isConfirmed) { count = 0; counterDisplay.textContent = count; Swal.fire(getToastConfig("success", "Metrics cleared back to zero.")); }
         });
+      });
+
+      decrementBtn.addEventListener("click", () => {
+        if (count <= 0) {
+          counterDisplay.style.transform = "scale(0.9)";
+          setTimeout(() => { counterDisplay.style.transform = "scale(1)"; }, 100);
+          return; // already 0, cannot be reduced further
+        }
+        count--;
+        counterDisplay.textContent = count;
+        counterDisplay.style.transform = "scale(0.85)";
+        setTimeout(() => { counterDisplay.style.transform = "scale(1)"; }, 100);
       });
 
       window.addEventListener("keydown", (e) => {

@@ -676,6 +676,14 @@
               CLICK HERE
             </button>
             <button
+              class="btn-action btn-ghost"
+              id="decrement-btn"
+              style="flex: 1; font-size: 20px; font-weight: 800"
+              title="Decrement by 1"
+            >
+              −
+            </button>
+            <button
               class="btn-action btn-danger"
               id="reset-counter-btn"
               style="flex: 1"
@@ -805,7 +813,7 @@
       const counterDisplay = document.getElementById("counter-value");
       const clickBtn = document.getElementById("click-btn");
       const resetCounterBtn = document.getElementById("reset-counter-btn");
-
+      const decrementBtn = document.getElementById("decrement-btn");
       let count = 0;
 
       /* ============================================================
@@ -1233,6 +1241,22 @@
             );
           }
         });
+      });
+
+      decrementBtn.addEventListener("click", () => {
+        if (count <= 0) {
+          counterDisplay.style.transform = "scale(0.9)";
+          setTimeout(() => {
+            counterDisplay.style.transform = "scale(1)";
+          }, 100);
+          return; // already 0, cannot be reduced further
+        }
+        count--;
+        counterDisplay.textContent = count;
+        counterDisplay.style.transform = "scale(0.85)";
+        setTimeout(() => {
+          counterDisplay.style.transform = "scale(1)";
+        }, 100);
       });
 
       /* ============================================================
