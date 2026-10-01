@@ -347,12 +347,12 @@ HTML_PAGE = r'''<!doctype html>
         { name: "Nasdaq Tallinn — Estonia", code: "OMXTSE" },
         { name: "Nasdaq Vilnius — Lithuania", code: "OMXVSE" },
         { name: "National Stock Exchange of India — India", code: "NSE" },
+        { name: "New York Stock Exchange — United States", code: "NYSE" },
+        { name: "New York Stock Exchange Arca — United States", code: "NYSEARCA" },
         { name: "New Zealand Exchange — New Zealand", code: "NZX" },
         { name: "NewConnect — Poland", code: "NEWCONNECT" },
         { name: "Nigerian Exchange — Nigeria", code: "NSENG" },
         { name: "Nordic Growth Market — Sweden", code: "NGM" },
-        { name: "NYSE — United States", code: "NYSE" },
-        { name: "NYSE Arca — United States", code: "NYSEARCA" },
         // O
         { name: "OTC Markets — United States", code: "OTC" },
         // P
@@ -874,7 +874,7 @@ HTML_PAGE = r'''<!doctype html>
           }
 
           const fmtClose = (v) =>
-            v.toLocaleString(undefined, { minimumFractionDigits: 6, maximumFractionDigits: 6 });
+            v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 });
 
           const latestDateCell = latest ? latest.date : "—";
           const latestCloseCell = latest ? fmtClose(latest.close) : "—";
