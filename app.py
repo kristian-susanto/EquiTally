@@ -874,7 +874,7 @@ HTML_PAGE = r'''<!doctype html>
           }
 
           const fmtClose = (v) =>
-            v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            v.toLocaleString(undefined, { minimumFractionDigits: 6, maximumFractionDigits: 6 });
 
           const latestDateCell = latest ? latest.date : "—";
           const latestCloseCell = latest ? fmtClose(latest.close) : "—";
