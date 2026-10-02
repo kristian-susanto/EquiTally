@@ -164,8 +164,8 @@ HTML_PAGE = r'''<!doctype html>
         <div class="input-group">
           <label>Data Source Support</label>
           <div class="radio-group">
-            <label class="radio-option"><input type="radio" name="source" value="package_quarterly" checked /> Quarterly Package</label>
-            <label class="radio-option"><input type="radio" name="source" value="package_semester" /> Semester Package</label>
+            <label class="radio-option"><input type="radio" name="source" value="quarterly_package" checked /> Quarterly Package</label>
+            <label class="radio-option"><input type="radio" name="source" value="semester_package" /> Semester Package</label>
             <label class="radio-option"><input type="radio" name="source" value="tradingview" /> TradingView</label>
             <label class="radio-option"><input type="radio" name="source" value="stockanalysis" /> StockAnalysis</label>
           </div>
@@ -874,7 +874,7 @@ HTML_PAGE = r'''<!doctype html>
           }
 
           const fmtClose = (v) =>
-            v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 });
+            v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 10 });
 
           const latestDateCell = latest ? latest.date : "—";
           const latestCloseCell = latest ? fmtClose(latest.close) : "—";
@@ -1082,7 +1082,7 @@ HTML_PAGE = r'''<!doctype html>
         // Force ticker to uppercase at the start
         const ticker = tickerInput.value.trim().toUpperCase();
         const source = getSelectedSource();
-        const freq = "quarterly"; // default; user can switch inside the popup
+        const freq = (source === "semester_package") ? "semiannual" : "quarterly";
         if (!rawExchange || !ticker) {
           Swal.fire(getToastConfig("error", "Exchange & Ticker code specifications are required!"));
           return;
@@ -1091,7 +1091,7 @@ HTML_PAGE = r'''<!doctype html>
         let targets = [];
         
         if (source.includes("package")) {
-          const isSemester = (source === "package_semester");
+          const isSemester = (source === "semester_package");
           targets = buildPackageTargets(exchangeCode, ticker, isSemester);
         } else {
           const selectedData = getSelectedDataPoints();
@@ -1108,6 +1108,7 @@ HTML_PAGE = r'''<!doctype html>
         const list = document.getElementById("linkList");
         list.innerHTML = "";
         container.style.display = "block";
+
         targets.forEach((item, index) => {
           const a = document.createElement("a");
           a.href = item.local ? "#" : item.url;
