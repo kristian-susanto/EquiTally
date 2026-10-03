@@ -47,6 +47,7 @@ HTML_PAGE = r'''<!doctype html>
       .stock-card { grid-column: span 7; }
       .side-panel { grid-column: span 5; display: flex; flex-direction: column; gap: 20px; }
       .converter-card { grid-column: span 12; }
+      .ticker-card { grid-column: span 12; }
       @media (max-width: 992px) { .stock-card, .side-panel { grid-column: span 12; } }
       .input-group { margin-bottom: 15px; }
       label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; color: var(--text-secondary); }
@@ -108,16 +109,18 @@ HTML_PAGE = r'''<!doctype html>
       .panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 8px; }
       .panel-head label { font-weight: 600; font-size: 14px; color: var(--text-secondary); margin-bottom: 0; }
       .panel-meta { font-size: 12px; color: var(--text-secondary); text-align: right; }
-      .converter-card textarea { width: 100%; min-height: min(40vh, 300px); padding: 14px 16px;
+      .converter-card textarea, .ticker-card textarea { width: 100%; min-height: min(40vh, 300px); padding: 14px 16px;
         border: 2px solid var(--border); border-radius: 12px; background: var(--input-bg);
         color: var(--text-main); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
         font-size: 14.5px; line-height: 1.7; resize: vertical; outline: none; }
-      #output { background: var(--output-bg); }
+      #output, #tickerOutput { background: var(--output-bg); }
       .options { margin-top: 14px; display: flex; align-items: center; gap: 8px;
         font-size: 14px; color: var(--text-secondary); cursor: pointer; user-select: none; }
       .options input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary); cursor: pointer; }
       .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
       .foot { margin: 18px 2px 0; font-size: 12.5px; color: var(--text-secondary); line-height: 1.6; }
+      .ticker-options { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 14px; }
+      .ticker-options .options { margin-top: 0; }
     </style>
   </head>
   <body>
@@ -242,6 +245,31 @@ HTML_PAGE = r'''<!doctype html>
           <button id="clearBtn" class="btn-action btn-ghost" type="button">Clear</button>
         </div>
         <p class="foot">Output values are separated by tabs. Paste into a spreadsheet row. Commas as thousand separators, no decimal point. Percentage lines ignored.</p>
+      </section>
+
+      <section class="card ticker-card">
+        <h2>📋 Ticker Symbol Extractor</h2>
+        <div class="converter-grid">
+          <div class="panel">
+            <div class="panel-head"><label for="tickerInput">Input — paste screener data</label><span class="panel-meta">auto-detects tickers</span></div>
+            <textarea id="tickerInput" spellcheck="false" placeholder="Paste rows copied from your screener here (StockAnalysis, TradingView, etc.)…"></textarea>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><label for="tickerOutput">Output — sorted tickers</label><span class="panel-meta" id="tickerStats"></span></div>
+            <textarea id="tickerOutput" spellcheck="false" readonly wrap="off" placeholder="Tickers A → Z will appear here…"></textarea>
+          </div>
+        </div>
+        <div class="ticker-options">
+          <label class="options"><input type="checkbox" id="tickerDedupe" checked /> Remove duplicates</label>
+          <label class="options"><input type="checkbox" id="tickerDesc" /> Sort Z → A</label>
+          <label class="options"><input type="checkbox" id="tickerTabbed" /> Tab-separated (single row)</label>
+        </div>
+        <div class="actions">
+          <button id="tickerCopyBtn" class="btn-action btn-primary" type="button">Copy result</button>
+          <button id="tickerSampleBtn" class="btn-action btn-ghost" type="button">Load sample</button>
+          <button id="tickerClearBtn" class="btn-action btn-ghost" type="button">Clear</button>
+        </div>
+        <p class="foot">Paste screener output containing standalone ticker lines. The extractor detects uppercase symbol lines, sorts them alphabetically, and formats them for clean spreadsheet pasting. Use <b>one per line</b> for a column, or <b>tab-separated</b> for a single row.</p>
       </section>
     </main>
 
@@ -1304,6 +1332,311 @@ HTML_PAGE = r'''<!doctype html>
         });
         sampleBtn.addEventListener("click", function () { inputEl.value = SAMPLE; render(); inputEl.focus(); });
         clearBtn.addEventListener("click", function () { inputEl.value = ""; outputEl.value = ""; statsEl.textContent = ""; inputEl.focus(); });
+        render();
+      })();
+
+      // ─────────────────────────────────────────────────────────────
+      //  TICKER SYMBOL EXTRACTOR
+      // ─────────────────────────────────────────────────────────────
+      (function () {
+        "use strict";
+        var inputEl = document.getElementById("tickerInput");
+        var outputEl = document.getElementById("tickerOutput");
+        var statsEl = document.getElementById("tickerStats");
+        var copyBtn = document.getElementById("tickerCopyBtn");
+        var sampleBtn = document.getElementById("tickerSampleBtn");
+        var clearBtn = document.getElementById("tickerClearBtn");
+        var dedupeBox = document.getElementById("tickerDedupe");
+        var descBox = document.getElementById("tickerDesc");
+        var tabbedBox = document.getElementById("tickerTabbed");
+
+        // Ticker line = alphabetic (2-6 chars) OR numeric (3-6 digits)
+        var TICKER_RE = /^([A-Z][A-Z0-9]{1,5}|\d{3,6})$/;
+
+        // Common financial abbreviations that could appear on their own line.
+        var NOISE = {
+          TTM: 1, EPS: 1, YOY: 1, QOQ: 1, ETF: 1, IPO: 1, CEO: 1, CFO: 1,
+          ROE: 1, ROA: 1, ROI: 1, NAV: 1, ALL: 1, NONE: 1, NA: 1
+        };
+
+        var SAMPLE = [
+          "Symbol",
+          "Mkt cap",
+          "Price",
+          "Chg %",
+          "Vol",
+          "Rel vol",
+          "P/E",
+          "EPS dil",
+          "TTM",
+          "EPS dil growth",
+          "TTM YoY",
+          "Div yield %",
+          "TTM",
+          "Sector",
+          "Analyst rating",
+          "Symbol",
+          "Mkt cap",
+          "Price",
+          "Chg %",
+          "Vol",
+          "Rel vol",
+          "P/E",
+          "EPS dil",
+          "TTM",
+          "EPS dil growth",
+          "TTM YoY",
+          "Div yield %",
+          "TTM",
+          "Sector",
+          "Analyst rating",
+          "2",
+          "2475",
+          "Luxshare Precision Industry Co., Ltd. Class H",
+          "D",
+          "446.21 B HKD\t52.95 HKD\t-1.12%\t436.69 K\t0.19\t—\t—\t—\t0.00%\tElectronic technology",
+          "Strong buy",
+          "6",
+          "6951",
+          "Chaozhou Three-Circle (Group) Co., Ltd. Class H",
+          "D",
+          "272.95 B HKD\t124.1 HKD\t-2.90%\t173.86 K\t0.11\t—\t—\t—\t0.00%\tElectronic technology",
+          "Strong buy",
+          "",
+          "2476",
+          "Victory Giant Technology (HuiZhou) Co., Ltd. Class H",
+          "D",
+          "194.06 B HKD\t195.1 HKD\t-1.22%\t546.33 K\t0.16\t32.72\t5.96 HKD\t—\t0.00%\tElectronic technology",
+          "Strong buy",
+          "3",
+          "3228",
+          "Shenzhen Kinwong Electronic Co., Ltd. Class H",
+          "D",
+          "121.15 B HKD\t74.40 HKD\t-3.19%\t522.7 K\t—\t54.25\t1.37 HKD\t-0.06%\t0.00%\tElectronic technology",
+          "No rating",
+          "",
+          "1989",
+          "Delton Technology (Guangzhou) Inc. Class H",
+          "D",
+          "69.2 B HKD\t118.1 HKD\t-1.25%\t214.2 K\t0.06\t33.36\t3.54 HKD\t—\t0.62%\tElectronic technology",
+          "Strong buy",
+          "",
+          "2382",
+          "Sunny Optical Technology (Group) Co., Ltd.",
+          "D",
+          "69.2 B HKD\t62.05 HKD\t-2.05%\t4.96 M\t0.81\t12.64\t4.91 HKD\t+51.68%\t1.90%\tElectronic technology",
+          "Buy",
+          "",
+          "6088",
+          "FIT Hon Teng Limited",
+          "D",
+          "35.09 B HKD\t4.845 HKD\t-2.02%\t7.95 M\t0.35\t27.10\t0.18 HKD\t+6.56%\t0.00%\tElectronic technology",
+          "Strong buy",
+          "",
+          "1879",
+          "Shanghai Xizhi Technology Co., Ltd Class H",
+          "D",
+          "26.5 B HKD\t280.0 HKD\t-0.64%\t33.41 K\t0.07\t—\t—\t—\t0.00%\tElectronic technology",
+          "Strong buy",
+          "",
+          "1478",
+          "Q Technology (Group) Co. Ltd.",
+          "D",
+          "6.05 B HKD\t5.060 HKD\t0.00%\t2.68 M\t0.78\t3.75\t1.35 HKD\t+214.98%\t10.87%\tElectronic technology",
+          "Buy",
+          "",
+          "1300",
+          "Trigiant Group Ltd.",
+          "D",
+          "5.06 B HKD\t2.625 HKD\t-8.22%\t9.04 M\t0.68\t14.26\t0.18 HKD\t—\t0.00%\tElectronic technology",
+          "No rating",
+          "",
+          "679",
+          "Asia Tele-Net and Technology Corp Ltd",
+          "D",
+          "1.73 B HKD\t4.200 HKD\t-8.10%\t350 K\t0.54\t—\t-0.12 HKD\t-66.36%\t0.88%\tElectronic technology",
+          "No rating",
+          "",
+          "1037",
+          "Maxnerva Technology Services Limited",
+          "D",
+          "444.89 M HKD\t0.620 HKD\t-1.59%\t1.36 M\t3.44\t—\t-0.00 HKD\t-313.64%\t0.00%\tElectronic technology",
+          "No rating",
+          "",
+          "567",
+          "Jsmart Technologies Group Limited",
+          "D",
+          "435.59 M HKD\t0.270 HKD\t0.00%\t180 K\t0.41\t—\t-0.01 HKD\t-0.76%\t0.00%\tElectronic technology",
+          "No rating",
+          "",
+          "1679",
+          "Risecomm Group Holdings Limited",
+          "D",
+          "374.18 M HKD\t1.320 HKD\t+0.76%\t92 K\t1.59\t—\t-0.13 HKD\t+78.80%\t0.00%\tElectronic technology",
+          "No rating",
+          "",
+          "8375",
+          "Data Union Capital International Holdings Group Limited",
+          "D",
+          "317.95 M HKD\t0.800 HKD\t-13.04%\t50 K\t0.40\t—\t-0.05 HKD\t-8.21%\t0.00%\tElectronic technology",
+          "No rating",
+          "",
+          "1480",
+          "Yan Tat Group Holdings Limited",
+          "D",
+          "240 M HKD\t1.000 HKD\t0.00%\t22 K\t0.24\t—\t-0.13 HKD\t-172.50%\t3.00%\tElectronic technology",
+          "No rating",
+          "",
+          "1120",
+          "Arts Optical International Holdings Limited",
+          "D",
+          "231.76 M HKD\t0.540 HKD\t-10.00%\t302 K\t2.57\t9.33\t0.06 HKD\t—\t0.00%\tElectronic technology",
+          "No rating",
+          "",
+          "8070",
+          "Keen Ocean International Holding Ltd.",
+          "D",
+          "215 M HKD\t1.075 HKD\t-2.27%\t20 K\t0.10\t3.90\t0.28 HKD\t+239.53%\t0.00%\tElectronic technology",
+          "No rating",
+          "",
+          "759",
+          "CEC International Holdings Limited",
+          "D",
+          "156.55 M HKD\t0.227 HKD\t-3.40%\t46 K\t0.94\t—\t-0.06 HKD\t+10.64%\t0.00%\tElectronic technology",
+          "No rating",
+          "",
+          "889",
+          "Datronix Holdings Limited",
+          "D",
+          "124.8 M HKD\t0.340 HKD\t-12.82%\t486 K\t1.77\t—\t-0.06 HKD\t+52.54%\t0.00%\tElectronic technology",
+          "No rating",
+          "",
+          "712",
+          "Comtec Solar Systems Group Ltd.",
+          "D",
+          "59.36 M HKD\t0.056 HKD\t-6.67%\t420 K\t1.40\t—\t-0.04 HKD\t+5.56%\t0.00%\tElectronic technology",
+          "No rating",
+          "",
+          "8286",
+          "Shanxi Changcheng Microlight Equipment Co. Ltd. Class H",
+          "D",
+          "43.86 M HKD\t0.142 HKD\t+22.41%\t270 K\t1.55\t—\t-0.11 HKD\t+10.05%\t0.00%\tElectronic technology",
+          "No rating"
+        ].join("\n");
+
+        function extractTickers(raw) {
+          var lines = String(raw).replace(/\r/g, "").split("\n");
+          var out = [];
+          var seen = Object.create(null);
+          for (var i = 0; i < lines.length; i++) {
+            var cur = lines[i].trim();
+            if (!TICKER_RE.test(cur)) continue;
+            if (NOISE[cur]) continue;
+
+            // Next non-empty line
+            var j = i + 1;
+            while (j < lines.length && !lines[j].trim()) j++;
+            var next = j < lines.length ? lines[j].trim() : "";
+
+            // Line after that
+            var k = j + 1;
+            while (k < lines.length && !lines[k].trim()) k++;
+            var after = k < lines.length ? lines[k].trim() : "";
+
+            // Confirm: next line looks like a company name (has lowercase),
+            // or the next / next-next line is the "D" market marker.
+            var looksLikeTicker =
+              /[a-z]/.test(next) || next === "D" || after === "D";
+            if (!looksLikeTicker) continue;
+
+            if (dedupeBox.checked) {
+              if (seen[cur]) continue;
+              seen[cur] = 1;
+            }
+            out.push(cur);
+          }
+          return out;
+        }
+
+        function render() {
+          var raw = inputEl.value;
+          var list = extractTickers(raw);
+
+          list.sort(function (a, b) {
+            return a < b ? -1 : a > b ? 1 : 0;
+          });
+          if (descBox.checked) list.reverse();
+
+          outputEl.value = tabbedBox.checked ? list.join("\t") : list.join("\n");
+
+          if (!raw.trim()) {
+            statsEl.textContent = "";
+          } else if (list.length === 0) {
+            statsEl.textContent = "no tickers detected";
+          } else {
+            statsEl.textContent =
+              list.length + (list.length === 1 ? " ticker" : " tickers") +
+              " · " + (descBox.checked ? "Z → A" : "A → Z");
+          }
+        }
+
+        function copyToClipboard(text) {
+          if (navigator.clipboard && window.isSecureContext) {
+            return navigator.clipboard.writeText(text)
+              .then(function () { return true; })
+              .catch(function () { return legacyCopy(text); });
+          }
+          return Promise.resolve(legacyCopy(text));
+        }
+        function legacyCopy(text) {
+          var ta = document.createElement("textarea");
+          ta.value = text;
+          ta.setAttribute("readonly", "");
+          ta.style.position = "fixed";
+          ta.style.top = "-1000px";
+          ta.style.opacity = "0";
+          document.body.appendChild(ta);
+          ta.select();
+          ta.setSelectionRange(0, ta.value.length);
+          var ok = false;
+          try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+          document.body.removeChild(ta);
+          return ok;
+        }
+
+        inputEl.addEventListener("input", render);
+        dedupeBox.addEventListener("change", render);
+        descBox.addEventListener("change", render);
+        tabbedBox.addEventListener("change", render);
+
+        copyBtn.addEventListener("click", function () {
+          var text = outputEl.value.trim();
+          if (!text) {
+            Swal.fire(getToastConfig("warning", "Nothing to copy yet — paste some data first."));
+            return;
+          }
+          copyToClipboard(text).then(function (ok) {
+            Swal.fire(getToastConfig(
+              ok ? "success" : "error",
+              ok ? "Tickers copied! Paste them straight into your spreadsheet."
+                 : "Copy failed — please select the output and copy manually."
+            ));
+          });
+        });
+
+        sampleBtn.addEventListener("click", function () {
+          inputEl.value = SAMPLE;
+          render();
+          inputEl.focus();
+        });
+
+        clearBtn.addEventListener("click", function () {
+          inputEl.value = "";
+          outputEl.value = "";
+          statsEl.textContent = "";
+          inputEl.focus();
+        });
+
         render();
       })();
     </script>

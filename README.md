@@ -1,6 +1,6 @@
 # EquiTally — Unified Tool Suite Documentation
 
-Welcome to the unified documentation for **EquiTally**. EquiTally combines four essential tools into a single, high-performance web interface: the **Stock Multi-Tab Researcher**, **Click Counter**, **Text Case Converter**, and **Financial Shorthand Converter**.
+Welcome to the unified documentation for **EquiTally**. EquiTally combines five essential tools into a single, high-performance web interface: the **Stock Multi-Tab Researcher**, **Click Counter**, **Text Case Converter**, **Financial Shorthand Converter**, and **Ticker Symbol Extractor**.
 
 This README merges all references into one unified guide for professional workflows, capital market analytics, productivity tracking, and financial data preparation.
 
@@ -14,6 +14,7 @@ This README merges all references into one unified guide for professional workfl
   - [2. Click Counter](#2-click-counter)
   - [3. Text Case Converter](#3-text-case-converter)
   - [4. Financial Shorthand Converter](#4-financial-shorthand-converter)
+  - [5. Ticker Symbol Extractor](#5-ticker-symbol-extractor)
 - [Stock Researcher — Data Source Modes](#stock-researcher--data-source-modes)
 - [Global Core Layout Specifications](#global-core-layout-specifications)
 - [Prerequisites & Environment Setup](#prerequisites--environment-setup)
@@ -28,6 +29,7 @@ This README merges all references into one unified guide for professional workfl
   - [Step 3: Operating the Click Counter](#step-3-operating-the-click-counter)
   - [Step 4: Converting Data Typography](#step-4-converting-data-typography)
   - [Step 5: Using the Financial Shorthand Converter](#step-5-using-the-financial-shorthand-converter)
+  - [Step 6: Extracting Ticker Symbols](#step-6-extracting-ticker-symbols)
 - [Keyboard Shortcuts](#keyboard-shortcuts)
 - [Financial Shorthand Converter Reference](#financial-shorthand-converter-reference)
   - [Features](#features)
@@ -36,9 +38,18 @@ This README merges all references into one unified guide for professional workfl
   - [Output Format](#output-format)
   - [Reverse Order Option](#reverse-order-option)
   - [How It Works](#how-it-works)
-  - [Customization](#customization)
-  - [Browser Support](#browser-support)
-  - [Troubleshooting](#troubleshooting)
+- [Ticker Symbol Extractor Reference](#ticker-symbol-extractor-reference)
+  - [Features](#ticker-extractor-features)
+  - [Quick Start](#ticker-extractor-quick-start)
+  - [Input Format](#ticker-extractor-input-format)
+  - [Output Format](#ticker-extractor-output-format)
+  - [Detection Rules](#detection-rules)
+  - [Options](#ticker-extractor-options)
+  - [How It Works](#ticker-extractor-how-it-works)
+  - [Examples](#ticker-extractor-examples)
+- [Customization](#customization)
+- [Browser Support](#browser-support)
+- [Troubleshooting](#troubleshooting)
 - [Unified Architecture & Technologies Used](#unified-architecture--technologies-used)
 - [License](#license)
 
@@ -52,6 +63,7 @@ EquiTally is a unified suite that provides complementary productivity, analytics
 2. **Click Counter** — Track high-frequency click interactions with temporary tally state and safe reset controls.
 3. **Text Case Converter** — Transform text between uppercase, lowercase, title case, and sentence case.
 4. **Financial Shorthand Converter** — Convert `K`, `M`, `B`, and `T` financial shorthand values into full integers for spreadsheet workflows.
+5. **Ticker Symbol Extractor** — Extract, deduplicate, and alphabetically sort ticker symbols from raw screener output for clean spreadsheet pasting.
 
 Together, these tools eliminate context switching by combining productivity utilities, capital market analytics, and financial data normalization in one browser-based application.
 
@@ -64,7 +76,7 @@ Together, these tools eliminate context switching by combining productivity util
 Designed for investors, traders, and financial analysts to eliminate repetitive browser research by triggering deep-dive analysis pipelines simultaneously with a single action.
 
 - **Multi-Tab Execution Workflow:** Generates and launches custom analytical URLs instantly, mapping exchange codes and asset symbols dynamically.
-- **Cross-Global Exchange Resolution System:** Out-of-the-box support for international markets including NYSE, NASDAQ, IDX, HKG, SGX, LON, TYO, and more.
+- **Cross-Global Exchange Resolution System:** Out-of-the-box support for international markets including NYSE, HKG, SGX, SSE, TYO, and more.
 - **Granular Data Point Filtering:** Choose precisely which dimensions to investigate (e.g., Latest News, Financial Ratios, Historical Trends, Balance Sheets, Income Statements, Cash Flow Metrics, or Dividend Trackers). This checklist applies to **TradingView** and **StockAnalysis** modes.
 - **Four Data Source Modes:** Switch the structural parsing logic between **Quarterly Package**, **Semester Package**, **TradingView**, or **StockAnalysis** depending on your data pipeline preferences.
 - **Package Modes (Quarterly & Semester):** One-click bundled workflows that ignore the granular checklist and launch a fixed set of **6 analytical tabs** in a single action — combining StockAnalysis, TradingView, and a locally rendered historical data view.
@@ -110,6 +122,21 @@ A lightweight, responsive module that converts shorthand financial values with *
 - **One-click copy** — Copies the entire output to the clipboard.
 - **No dependencies** — Implemented in vanilla JavaScript with no external runtime libraries.
 
+### 5. 📋 Ticker Symbol Extractor
+
+A precision parsing module that ingests raw screener output and returns a clean, deduplicated, alphabetically sorted list of ticker symbols — ready to paste as a spreadsheet column or a single tab-separated row.
+
+- **Dual-format ticker detection** — Recognises both **alphabetic symbols** (e.g., `NVDA`, `AMZN`, `DIS`) and **numeric symbols** (e.g., `2475`, `6951`, `679`) so it works with US markets, ASEAN exchanges, and Hong Kong stock codes alike.
+- **Context-aware confirmation** — A line is only accepted as a ticker if the following non-empty line looks like a company name (contains lowercase characters) or is the standalone market marker `D` (as produced by StockAnalysis screener exports). This prevents header rows, numeric cells, and unrelated short lines from polluting the output.
+- **Header noise filtering** — Common financial header abbreviations (`TTM`, `EPS`, `YOY`, `QOQ`, `ETF`, `IPO`, `CEO`, `CFO`, `ROE`, `ROA`, `ROI`, `NAV`, `ALL`, `NONE`, `NA`) are automatically discarded.
+- **Alphabetical sorting (A → Z)** — The default output order; a single checkbox flips it to **Z → A** for reverse workflows.
+- **Duplicate removal** — On by default; toggle it off to preserve every occurrence in the source.
+- **Flexible output shape** — Choose **one symbol per line** (ready for a column) or **tab-separated single row** (ready for a row) with a single checkbox.
+- **Live statistics badge** — Displays how many tickers were extracted and which sort direction is active (e.g., `22 tickers · A → Z`).
+- **One-click copy** — The **Copy result** button pushes the entire output to your clipboard, ready to paste into Excel or Google Sheets.
+- **Built-in sample loader** — The **Load sample** button populates the input with a real-world Hong Kong electronic technology screener export so you can test the parser without hunting for your own data.
+- **No dependencies** — Pure vanilla JavaScript, zero external libraries.
+
 ---
 
 ## Stock Researcher — Data Source Modes
@@ -142,7 +169,7 @@ Package modes are intentionally unconfigurable on the main page — they are fix
 
 When the ⏳ **Historical Data** target is executed (only available inside Package modes), EquiTally opens a fresh browser tab and performs the following:
 
-1. Resolves the ticker to a Yahoo Finance symbol using the exchange suffix map (e.g., `IDX → .JK`, `HKG → .HK`, `TYO → .T`).
+1. Resolves the ticker to a Yahoo Finance symbol using the exchange suffix map (e.g., `HKG → .HK`).
 2. Calls the Flask `/proxy?symbol=…&range=10y&interval=1d` endpoint, which forwards the request to Yahoo Finance with a desktop User-Agent header.
 3. Caches the returned daily closes in memory — the data is fetched **once per popup**.
 4. Reduces the daily data to **period-end closing prices** based on the currently selected frequency:
@@ -350,6 +377,19 @@ The console will print the EquiTally banner and the exact URL for convenience.
 3. Click **Copy result**.
 4. Paste into your Sheets spreadsheet — values will fill a row horizontally.
 
+### Step 6: Extracting Ticker Symbols
+
+1. **Paste your screener output:** Copy rows directly from your screener (StockAnalysis, TradingView, or any source that lists ticker symbols on their own line, followed by a company name or the market marker `D`) and paste them into the **Input** textarea of the **📋 Ticker Symbol Extractor** card.
+2. **Review the auto-detected tickers:** The **Output** textarea updates live and shows the extracted, deduplicated, alphabetically sorted tickers. A stats badge above the output displays the total count and the active sort direction (e.g., `22 tickers · A → Z`).
+3. **Adjust options as needed** (see [Ticker Symbol Extractor Options](#ticker-extractor-options)):
+   - **Remove duplicates** — On by default; uncheck to preserve every occurrence.
+   - **Sort Z → A** — Off by default; check to reverse the alphabetical order.
+   - **Tab-separated (single row)** — Off by default; check if you want to paste the tickers as a horizontal row rather than a column.
+4. **Copy the result:** Click **Copy result** to push the formatted output to your clipboard.
+5. **Paste into your spreadsheet:** Because the output is deduplicated, alphabetically sorted, and (optionally) tab-separated, it drops cleanly into Excel or Google Sheets without further cleanup.
+
+> **Tip:** If your screener produces an unexpected format, click **Load sample** to see exactly what input shape EquiTally expects, then compare it against your own data.
+
 ---
 
 ## Keyboard Shortcuts
@@ -371,8 +411,6 @@ The console will print the EquiTally banner and the exact URL for convenience.
 
 The Financial Shorthand Converter is a lightweight, responsive web tool that converts shorthand financial values with **K**, **M**, **B**, and **T** suffixes into full numbers. It automatically skips percentage lines, outputs tab-separated values for easy pasting into Sheets (horizontally), and includes an optional reverse-order feature to match right-to-left spreadsheet layouts.
 
----
-
 ### Features
 
 - **Suffix conversion** – Converts `K` (×1,000), `M` (×1,000,000), `B` (×1,000,000,000), and `T` (×1,000,000,000,000) to full integers.
@@ -385,8 +423,6 @@ The Financial Shorthand Converter is a lightweight, responsive web tool that con
 - **One-click copy** – Copies the entire output to the clipboard.
 - **No dependencies** – A single module with embedded CSS and JavaScript.
 
----
-
 ### Quick Start
 
 1. Start the Flask server with `python app.py` and open `http://localhost:5000` in any modern web browser.
@@ -394,8 +430,6 @@ The Financial Shorthand Converter is a lightweight, responsive web tool that con
 3. (Optional) Adjust the **Reverse order** checkbox if needed.
 4. Click **Copy result**.
 5. Paste into your Sheets spreadsheet – values will fill a row horizontally.
-
----
 
 ### Input Format
 
@@ -429,8 +463,6 @@ The Financial Shorthand Converter is a lightweight, responsive web tool that con
 +17.60%
 ```
 
----
-
 ### Output Format
 
 - Each valid input line produces a full integer with comma thousands separators (e.g., `9,260,000,000,000`).
@@ -446,8 +478,6 @@ The Financial Shorthand Converter is a lightweight, responsive web tool that con
 
 > **Note:** If the **Reverse order** checkbox is checked, the output sequence is reversed (e.g., `11,640,000,000,000` first).
 
----
-
 ### Reverse Order Option
 
 Many financial spreadsheets place the most recent period on the left and older periods on the right. If your input list is ordered from oldest to newest (left to right), enabling **Reverse order** will flip the sequence so the newest value appears first when pasted.
@@ -456,8 +486,6 @@ Many financial spreadsheets place the most recent period on the left and older p
 - **Unchecked:** Output preserves the original input order.
 
 You can toggle this checkbox at any time; the output updates instantly.
-
----
 
 ### How It Works
 
@@ -476,26 +504,207 @@ You can toggle this checkbox at any time; the output updates instantly.
 
 ---
 
-### Customization
+## Ticker Symbol Extractor Reference
 
-You can easily modify the tool to suit your needs by editing the source files:
+The Ticker Symbol Extractor is a client-side parser that turns raw screener output into a clean, deduplicated, alphabetically sorted list of ticker symbols. It is designed for workflows where you copy a screener result set (for example, from StockAnalysis or TradingView), then need a neat column of symbols to paste into a spreadsheet.
 
-- **Sample data** – Change the `SAMPLE` array in the `<script>` section of `app.py` to load your own example.
-- **Multipliers** – Adjust the `MULT` object if you need different scaling factors.
-- **Placeholder text** – Update the `placeholder` attributes on the textareas.
-- **Styling** – All CSS is embedded in the `<style>` block inside `HTML_PAGE`; feel free to tweak colors, fonts, or layout.
-- **Historical table layout** – The transposed Historical Data table (Period / Actual Date / Close Price, with a _Latest_ column first) is generated inside `openHistoryTab()` in `app.py`. Adjust the period-label logic in `getPeriodLabel()` or the row order in the HTML template to change its structure.
-- **Default historical frequency** – The popup opens in **Quarterly** mode by default. To change the default, modify the `let freq = (initialFreq === "semiannual") ? "semiannual" : "quarterly";` line at the top of `openHistoryTab()`, or change the value passed in `processSearch()` (`const freq = "quarterly";`).
-- **Quarterly / Semiannual grouping logic** – Both frequencies are handled inside `processPeriodData(timestamps, closes, freq)`. To add a new frequency (e.g., monthly), extend this function and add a corresponding button in the popup header.
-- **Package tab delay** – Adjust the `350` millisecond timeout inside `processSearch()` to change the delay between opening bundled Package tabs.
-- **Proxy timeout** – The `/proxy` route uses a 15-second timeout to Yahoo Finance; adjust as needed for slower networks.
-- **Refresh shortcut interception** – The `keydown` listener in the main page script uses a capture-phase handler to block `Ctrl+R`, `Ctrl+Shift+R`, `F5`, `Ctrl+F5`, and `Shift+F5`. To modify which combinations are blocked, edit the `isRefreshCombo` condition inside that listener.
+### Ticker Extractor Features
+
+- **Dual-format detection** — Accepts both alphabetic symbols (`NVDA`, `AMZN`, `DIS`) and numeric symbols (`2475`, `6951`, `679`) so it handles US, ASEAN, and Hong Kong markets without configuration.
+- **Contextual confirmation** — A line is accepted as a ticker only if the next non-empty line looks like a company name (contains lowercase characters) or equals `D` (the StockAnalysis market marker). This eliminates header rows, numeric cells, and unrelated short lines.
+- **Header noise filtering** — Common financial abbreviations are ignored automatically: `TTM`, `EPS`, `YOY`, `QOQ`, `ETF`, `IPO`, `CEO`, `CFO`, `ROE`, `ROA`, `ROI`, `NAV`, `ALL`, `NONE`, `NA`.
+- **Alphabetical sorting** — Default output order is A → Z; a single checkbox flips it to Z → A.
+- **Duplicate removal** — Enabled by default; uncheck to preserve every occurrence in source order.
+- **Flexible output shape** — Choose **one symbol per line** (for a spreadsheet column) or **tab-separated single row** (for a spreadsheet row).
+- **Live statistics** — A badge above the output shows the total ticker count and active sort direction.
+- **One-click copy** — Pushes the entire output to your clipboard with a themed confirmation toast.
+- **Sample loader** — The **Load sample** button drops in a real Hong Kong electronic technology screener export so you can test the parser instantly.
+- **Zero dependencies** — Vanilla JavaScript only, no external runtime library.
+
+### Ticker Extractor Quick Start
+
+1. Start the Flask server with `python app.py` and open `http://localhost:5000` in any modern browser.
+2. Scroll to the **📋 Ticker Symbol Extractor** card (directly beneath the Financial Shorthand Converter).
+3. Paste your screener output into the **Input** textarea.
+4. (Optional) Adjust the **Remove duplicates**, **Sort Z → A**, or **Tab-separated** checkboxes.
+5. Click **Copy result**.
+6. Paste into Excel or Google Sheets.
+
+### Ticker Extractor Input Format
+
+- Any plain-text block that contains ticker symbols on their own lines, immediately followed (in the next non-empty line) by a company name or the market marker `D`.
+- Blank lines, header rows, numeric cells, and standalone short words are tolerated and ignored.
+- Multi-column tab-separated rows (e.g., `Mkt cap\tPrice\tChg %\tVol`) are tolerated — only the standalone ticker lines are extracted.
+
+**Example input (excerpt from a Hong Kong screener export):**
+
+```text
+Symbol
+Mkt cap
+Price
+Chg %
+…
+2
+2475
+Luxshare Precision Industry Co., Ltd. Class H
+D
+446.21 B HKD	52.95 HKD	-1.12%	436.69 K	0.19	—	—	—	0.00%	Electronic technology
+Strong buy
+6
+6951
+Chaozhou Three-Circle (Group) Co., Ltd. Class H
+D
+272.95 B HKD	124.1 HKD	-2.90%	173.86 K	0.11	—	—	—	0.00%	Electronic technology
+Strong buy
+
+2476
+Victory Giant Technology (HuiZhou) Co., Ltd. Class H
+D
+194.06 B HKD	195.1 HKD	-1.22%	546.33 K	0.16	32.72	5.96 HKD	—	0.00%	Electronic technology
+Strong buy
+```
+
+### Ticker Extractor Output Format
+
+- **Column mode (default):** One ticker per line, ready to paste into a single spreadsheet column.
+
+  ```text
+  679
+  712
+  759
+  889
+  1037
+  1120
+  1300
+  1478
+  1480
+  1679
+  1879
+  1989
+  2382
+  2475
+  2476
+  3228
+  6088
+  6951
+  8070
+  8286
+  8375
+  ```
+
+- **Tab-separated mode (checkbox):** All tickers joined by `\t`, ready to paste across a single spreadsheet row.
+
+  ```text
+  679	712	759	889	1037	1120	1300	1478	1480	1679	1879	1989	2382	2475	2476	3228	6088	6951	8070	8286	8375
+  ```
+
+> **Note:** Numeric symbols are sorted as strings, so `679` appears before `1037` and `2476` appears after `2475`. This matches the natural ordering of the source columns and is what most spreadsheet users expect for ticker lists.
+
+### Detection Rules
+
+The extractor applies the following rules to every line of the input:
+
+1. **Pattern match** — The trimmed line must match one of:
+   - An alphabetic ticker: starts with a letter A–Z, followed by 1–5 uppercase letters or digits (total length 2–6).
+   - A numeric ticker: 3–6 digits (e.g., `679`, `2475`, `103700`).
+2. **Noise filter** — The line must not be one of the reserved header abbreviations (`TTM`, `EPS`, `YOY`, `QOQ`, `ETF`, `IPO`, `CEO`, `CFO`, `ROE`, `ROA`, `ROI`, `NAV`, `ALL`, `NONE`, `NA`).
+3. **Context confirmation** — The next non-empty line must either:
+   - Contain at least one lowercase letter (i.e., look like a company name), **or**
+   - Be exactly `D` (the market marker), **or**
+   - Be followed by a line that is exactly `D`.
+4. **Deduplication (optional)** — If **Remove duplicates** is enabled (default), only the first occurrence of each ticker is kept.
+
+Only lines that satisfy all four rules are emitted.
+
+### Ticker Extractor Options
+
+| Option                         | Default | Effect                                                                                  |
+| ------------------------------ | ------- | --------------------------------------------------------------------------------------- |
+| **Remove duplicates**          | ✅ On   | Only the first occurrence of each ticker is kept. Uncheck to preserve every occurrence. |
+| **Sort Z → A**                 | Off     | Reverses the alphabetical sort order.                                                   |
+| **Tab-separated (single row)** | Off     | Joins the output with `\t` (single row) instead of `\n` (one per line).                 |
+
+### Ticker Extractor How It Works
+
+1. **Line splitting** — The input is split on `\r\n` or `\n`, and carriage returns are stripped.
+2. **Trim & match** — Each line is trimmed and tested against the ticker regex.
+3. **Noise rejection** — Reserved header words are skipped.
+4. **Context lookahead** — The next two non-empty lines are inspected to confirm the current line is genuinely a ticker (and not a stray numeric cell or unrelated short word).
+5. **Dedup collection** — Surviving tickers are pushed into the result array, optionally deduplicated using an internal `seen` map.
+6. **Sort** — The result array is sorted lexicographically (A → Z by default; Z → A if the reverse checkbox is on).
+7. **Join** — The sorted array is joined with `\n` (column mode) or `\t` (row mode) and written to the output textarea.
+8. **Statistics** — The stats badge is updated with the total count and active sort direction.
+
+### Ticker Extractor Examples
+
+**Input fragment:**
+
+```text
+2475
+Luxshare Precision Industry Co., Ltd. Class H
+D
+446.21 B HKD	…
+
+6951
+Chaozhou Three-Circle (Group) Co., Ltd. Class H
+D
+272.95 B HKD	…
+```
+
+**Output (A → Z, deduplicated, column mode):**
+
+```text
+2475
+6951
+```
+
+**Same fragment, Z → A + tab-separated:**
+
+```text
+6951	2475
+```
+
+**Header-only input (no tickers present):**
+
+```text
+Symbol
+Mkt cap
+Price
+Chg %
+Vol
+Rel vol
+P/E
+EPS dil
+TTM
+```
+
+**Output:** _(empty)_ — the stats badge displays `no tickers detected`.
+
+---
+
+## Customization
+
+You can easily modify the tools to suit your needs by editing the source in `app.py`:
+
+- **Sample data (Financial Shorthand Converter)** — Change the `SAMPLE` array in the Financial Shorthand Converter IIFE.
+- **Sample data (Ticker Symbol Extractor)** — Change the `SAMPLE` array inside the Ticker Symbol Extractor IIFE to load your own example.
+- **Ticker detection rules** — Adjust the `TICKER_RE` regex and the `NOISE` object in the Ticker Symbol Extractor IIFE to add or remove accepted patterns and header words.
+- **Ticker context confirmation** — Edit the `looksLikeTicker` condition to change how the extractor validates candidate lines (e.g., allow lines followed by a numeric ID instead of a company name).
+- **Multipliers (Financial Shorthand Converter)** — Adjust the `MULT` object if you need different scaling factors.
+- **Placeholder text** — Update the `placeholder` attributes on any textarea.
+- **Styling** — All CSS is embedded in the `<style>` block inside `HTML_PAGE`; feel free to tweak colors, fonts, or layout.
+- **Historical table layout** — The transposed Historical Data table (Period / Actual Date / Close Price, with a _Latest_ column first) is generated inside `openHistoryTab()` in `app.py`. Adjust the period-label logic in `getPeriodLabel()` or the row order in the HTML template to change its structure.
+- **Default historical frequency** — The popup opens in **Quarterly** mode by default. To change the default, modify the `let freq = (initialFreq === "semiannual") ? "semiannual" : "quarterly";` line at the top of `openHistoryTab()`, or change the value passed in `processSearch()` (`const freq = "quarterly";`).
+- **Quarterly / Semiannual grouping logic** — Both frequencies are handled inside `processPeriodData(timestamps, closes, freq)`. To add a new frequency (e.g., monthly), extend this function and add a corresponding button in the popup header.
+- **Package tab delay** — Adjust the `350` millisecond timeout inside `processSearch()` to change the delay between opening bundled Package tabs.
+- **Proxy timeout** — The `/proxy` route uses a 15-second timeout to Yahoo Finance; adjust as needed for slower networks.
+- **Refresh shortcut interception** — The `keydown` listener in the main page script uses a capture-phase handler to block `Ctrl+R`, `Ctrl+Shift+R`, `F5`, `Ctrl+F5`, and `Shift+F5`. To modify which combinations are blocked, edit the `isRefreshCombo` condition inside that listener.
 
 No build step is required — the Flask server hosts the single-file frontend.
 
 ---
 
-### Browser Support
+## Browser Support
 
 The tool works in all modern browsers that support:
 
@@ -508,25 +717,29 @@ For older browsers, the fallback copy method may work, but BigInt support is ess
 
 ---
 
-### Troubleshooting
+## Troubleshooting
 
 > **Note:** The main EquiTally page intercepts refresh shortcuts (`Ctrl+R`, `Ctrl+Shift+R`, `F5`, `Ctrl+F5`, `Shift+F5`). If you need to force a refresh to clear a cache, use your browser's menu (e.g., View → Reload) or open the page in a new incognito window. Inside the Historical Data popup, refresh shortcuts are **not** intercepted.
 
-| Issue                                          | Possible Cause                               | Solution                                                                                                                                                                   |
-| ---------------------------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Copy button does nothing                       | Browser blocks clipboard access              | Use a secure context (HTTPS or localhost) or copy manually from the output textarea.                                                                                       |
-| Values not pasting horizontally                | Spreadsheet settings                         | Ensure you paste into a single cell and that the tab character is preserved. Some apps may convert tabs to spaces.                                                         |
-| Wrong number of columns                        | Input contains unrecognised lines            | Check the stats indicator (e.g., "8 converted · 8 skipped"). Unrecognised lines are silently ignored.                                                                      |
-| Reverse order not working                      | Checkbox state                               | Make sure the checkbox is checked if you need reversed output.                                                                                                             |
-| Large numbers lose precision                   | JavaScript number limitations                | The tool uses BigInt, so precision is maintained. If you see incorrect values, ensure you are using a modern browser.                                                      |
-| `Enter` does not trigger search                | Focused inside a `<textarea>`                | Textareas (Financial Shorthand Converter, Text Case Converter) intentionally keep native newline behaviour. Move focus to the Exchange/Ticker field.                       |
-| Package mode launched too few tabs             | Fixed bundle of 6 tabs is expected           | This is by design. Switch to StockAnalysis or TradingView mode if you prefer granular checklist control.                                                                   |
-| Historical Data tab shows error                | Flask `/proxy` unreachable or ticker invalid | Ensure `python app.py` is running and the page is loaded from `http://localhost:5000`. Verify the ticker and exchange code.                                                |
-| Historical Data favicon still shows old emoji  | Browser favicon cache                        | Open the popup in an incognito window, or use the browser menu to force a full reload of the main page.                                                                    |
-| Historical table dates not aligned with prices | Horizontal scrolling is expected             | The table is intentionally transposed. The leftmost label column (`Period` / `Actual Date` / `Close Price`) stays sticky on the left while you scroll to compare periods.  |
-| Quarterly / Semiannual toggle not visible      | Browser cached the old popup template        | Open the main page in an incognito window or use the browser menu to reload the page, then reopen the popup. The toggle lives inside the blue popup header.                |
-| Semiannual mode shows fewer rows than expected | Only June & December are kept                | This is by design — Semiannual mode keeps exactly the two half-year ends per year (June and December).                                                                     |
-| Latest column style looks different            | Browser cache                                | Open the main page in an incognito window or use the browser menu to reload the page. The Latest column is styled identically to all other columns in the current release. |
+| Issue                                          | Possible Cause                               | Solution                                                                                                                                                                      |
+| ---------------------------------------------- | -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Copy button does nothing                       | Browser blocks clipboard access              | Use a secure context (HTTPS or localhost) or copy manually from the output textarea.                                                                                          |
+| Values not pasting horizontally                | Spreadsheet settings                         | Ensure you paste into a single cell and that the tab character is preserved. Some apps may convert tabs to spaces.                                                            |
+| Wrong number of columns (Shorthand Converter)  | Input contains unrecognised lines            | Check the stats indicator (e.g., "8 converted · 8 skipped"). Unrecognised lines are silently ignored.                                                                         |
+| Reverse order not working                      | Checkbox state                               | Make sure the checkbox is checked if you need reversed output.                                                                                                                |
+| Large numbers lose precision                   | JavaScript number limitations                | The tool uses BigInt, so precision is maintained. If you see incorrect values, ensure you are using a modern browser.                                                         |
+| `Enter` does not trigger search                | Focused inside a `<textarea>`                | Textareas (Financial Shorthand Converter, Text Case Converter, Ticker Symbol Extractor) intentionally keep native newline behaviour. Move focus to the Exchange/Ticker field. |
+| Package mode launched too few tabs             | Fixed bundle of 6 tabs is expected           | This is by design. Switch to StockAnalysis or TradingView mode if you prefer granular checklist control.                                                                      |
+| Historical Data tab shows error                | Flask `/proxy` unreachable or ticker invalid | Ensure `python app.py` is running and the page is loaded from `http://localhost:5000`. Verify the ticker and exchange code.                                                   |
+| Historical Data favicon still shows old emoji  | Browser favicon cache                        | Open the popup in an incognito window, or use the browser menu to force a full reload of the main page.                                                                       |
+| Historical table dates not aligned with prices | Horizontal scrolling is expected             | The table is intentionally transposed. The leftmost label column (`Period` / `Actual Date` / `Close Price`) stays sticky on the left while you scroll to compare periods.     |
+| Quarterly / Semiannual toggle not visible      | Browser cached the old popup template        | Open the main page in an incognito window or use the browser menu to reload the page, then reopen the popup. The toggle lives inside the blue popup header.                   |
+| Semiannual mode shows fewer rows than expected | Only June & December are kept                | This is by design — Semiannual mode keeps exactly the two half-year ends per year (June and December).                                                                        |
+| Latest column style looks different            | Browser cache                                | Open the main page in an incognito window or use the browser menu to reload the page. The Latest column is styled identically to all other columns in the current release.    |
+| Ticker Extractor returns 0 tickers             | Input format doesn't match detection rules   | Click **Load sample** to compare shapes. Ensure ticker lines are followed by a company name or the `D` marker. Adjust `TICKER_RE` if your market uses a different format.     |
+| Ticker Extractor includes false positives      | Header word not in the noise list            | Add the word to the `NOISE` object inside the Ticker Symbol Extractor IIFE.                                                                                                   |
+| Ticker Extractor misses some symbols           | Symbol format not matched by the regex       | Extend `TICKER_RE` to include the missing format (e.g., allow a leading digit for markets that use alphanumeric codes).                                                       |
+| Ticker Extractor output order looks odd        | Numeric sorting is lexicographic             | By design, tickers are sorted as strings. This matches typical spreadsheet column ordering for numeric codes.                                                                 |
 
 ---
 
@@ -535,9 +748,10 @@ For older browsers, the fallback copy method may work, but BigInt support is ess
 - **Flask (Python) Backend:** `app.py` serves the single-file frontend via `render_template_string` and exposes a `/proxy` endpoint that forwards requests to Yahoo Finance for historical price data. This is the only server-side component.
 - **HTML5 Elements:** Structured content layout separating input contexts from interactive control modules.
 - **CSS3 Variables & Responsive Design:** Centralized color variables handle real-time theme swapping, while a mobile-first layout engine guarantees responsive adaptations — including the transposed, horizontally scrollable Historical Data table (Period / Actual Date / Close Price rows with a leading _Latest_ column).
-- **Vanilla JavaScript (ES6+):** Manages local caching layers, handles typography transformations, monitors tracking variables, maps data parameters into targeted financial URL strings, and renders the local Historical Data tab (including the period-label derivation logic, the in-popup Quarterly / Semiannual toggle, and the cached daily-close dataset). The main page also runs a capture-phase `keydown` listener to intercept refresh shortcuts.
+- **Vanilla JavaScript (ES6+):** Manages local caching layers, handles typography transformations, monitors tracking variables, maps data parameters into targeted financial URL strings, renders the local Historical Data tab (including the period-label derivation logic, the in-popup Quarterly / Semiannual toggle, and the cached daily-close dataset), and runs the Ticker Symbol Extractor (regex detection, contextual confirmation, dedup, sort, and format). The main page also runs a capture-phase `keydown` listener to intercept refresh shortcuts.
 - **SweetAlert2 Library Integration:** Leveraged for modern, non-blocking toast popups and validation dialogs that automatically match the selected system theme.
 - **BigInt Arithmetic:** Used by EquiTally's Financial Shorthand Converter for exact financial suffix conversion without floating-point precision loss.
+- **Regex-Based Parsing:** The Ticker Symbol Extractor uses a compact regex (`^([A-Z][A-Z0-9]{1,5}|\d{3,6})$`) to accept both alphabetic and numeric ticker formats in a single pass.
 - **Clipboard API Integration:** Enables one-click copy operations across EquiTally, with fallback support where needed.
 - **`requests` (Python):** Used by the Flask `/proxy` route to make outbound HTTP calls to Yahoo Finance with a desktop User-Agent header.
 
